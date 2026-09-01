@@ -1553,7 +1553,6 @@
                 }
                 let gameId = newGameId.value.trim();
                 if (!gameId) {
-                    // Generate UUID
                     gameId = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
                         /[xy]/g, function(c) {
                             var r = Math.random() * 16 | 0,
@@ -1564,16 +1563,25 @@
                 }
                 showToast(newMessage, 'Creating game…', '');
                 btnCreateNew.disabled = true;
-
+            
                 try {
-                    // Check if game already exists
+                    // 1. Check if game already exists
                     const { data: existing } = await fetchGame(gameId);
                     if (existing && existing.id) {
                         showToast(newMessage, 'Game already exists. Use Continue tab to join.', 'error');
                         btnCreateNew.disabled = false;
                         return;
                     }
-                    // Upsert session
+            
+                    // 2. Create the game FIRST
+                    const result = await createGame(gameId, username);
+                    if (result.error) {
+                        showToast(newMessage, 'Create failed: ' + result.error.message, 'error');
+                        btnCreateNew.disabled = false;
+                        return;
+                    }
+            
+                    // 3. Now upsert the session with the now-existing game ID
                     const sessionResult = await upsertSession(username, gameId);
                     if (sessionResult.error) {
                         showToast(newMessage, 'Session error: ' + sessionResult.error.message, 'error');
@@ -1583,14 +1591,7 @@
                     state.sessionId = sessionResult.data.id;
                     state.sessionUsername = username;
                     localStorage.setItem('garnet_session_id', state.sessionId);
-
-                    // Create game
-                    const result = await createGame(gameId, username);
-                    if (result.error) {
-                        showToast(newMessage, 'Create failed: ' + result.error.message, 'error');
-                        btnCreateNew.disabled = false;
-                        return;
-                    }
+            
                     const assignedPlayerId = 'player1';
                     state.gameId = gameId;
                     state.playerId = assignedPlayerId;
@@ -1598,18 +1599,14 @@
                     state.game = result.data;
                     state.guesses = [];
                     state.myWordSet = false;
-
-                    // Setup realtime
+            
                     setupSubscription(gameId);
-
-                    // Show QR
+            
                     creationInfo.classList.remove('hidden');
-                    const qrUrl =
-                        `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(gameId)}`;
+                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(gameId)}`;
                     qrImage.src = qrUrl;
                     createdUuidDisplay.textContent = gameId;
-
-                    // Proceed to lobby
+            
                     showScreen(screenLobby);
                     updateLobbyUI();
                     showToast(newMessage, '', '');
