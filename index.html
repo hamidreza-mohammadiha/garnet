@@ -195,13 +195,14 @@
             font-weight: 600;
             color: #bcc9e0;
             font-size: 14px;
+            word-break: break-all;
         }
         .status-bar .game-id span {
             background: #0f141e;
             padding: 2px 12px;
             border-radius: 20px;
             font-family: monospace;
-            font-size: 15px;
+            font-size: 13px;
             color: #d0def0;
         }
         .status-badge {
@@ -488,7 +489,7 @@
             <div class="panel" style="margin-top:20px;">
                 <div class="panel-title">🎯 Enter a game</div>
                 <div class="input-group">
-                    <input id="joinGameId" type="text" placeholder="Game ID (e.g. ABC123)" value="" maxlength="20" style="flex:1;min-width:100px;" />
+                    <input id="joinGameId" type="text" placeholder="Game ID (UUID)" value="" style="flex:1;min-width:100px;" />
                     <input id="joinPlayerName" type="text" placeholder="Your name" value="" maxlength="20" style="flex:1;min-width:100px;" />
                 </div>
                 <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
@@ -497,7 +498,7 @@
                 </div>
                 <div id="joinMessage" class="toast hidden" style="margin-top:12px;"></div>
                 <div style="margin-top:12px;font-size:13px;color:#5a6a88;text-align:center;">
-                    Use any game ID. Share it with a friend to play.
+                    Use the full UUID (copy from the game creator). Create a new game to get one.
                 </div>
             </div>
         </div>
@@ -588,9 +589,6 @@
                 <button id="btnLeaveGame" class="danger" style="flex:1;">Leave Game</button>
             </div>
         </div>
-
-        <!-- ============ SCREEN: game over (embedded in game screen) ============ -->
-        <!-- we show winner inside game screen via word reveal panel -->
     </div>
 
     <!-- ============================================================ -->
@@ -650,7 +648,7 @@
 
             // ---------- state ----------
             let state = {
-                gameId: null,
+                gameId: null, // UUID string
                 playerId: null, // 'player1' or 'player2'
                 playerName: null,
                 game: null, // full game record
@@ -691,8 +689,8 @@
 
             function getPlayerLabel(playerId) {
                 if (!state.game) return '—';
-                if (playerId === 'player1') return state.game.player1_name || 'P1';
-                if (playerId === 'player2') return state.game.player2_name || 'P2';
+                if (playerId === 'player1') return state.game.player1_id || 'P1';
+                if (playerId === 'player2') return state.game.player2_id || 'P2';
                 return '—';
             }
 
@@ -719,7 +717,8 @@
 
             function isPlayerReady(playerId) {
                 if (!state.game) return false;
-                return playerId === 'player1' ? state.game.player1_ready : state.game.player2_ready;
+                const word = playerId === 'player1' ? state.game.player1_word : state.game.player2_word;
+                return word && word.length === 4;
             }
 
             // ---------- feedback calculation ----------
@@ -732,7 +731,6 @@
                 const usedS = [false, false, false, false];
                 const usedG = [false, false, false, false];
 
-                // exact matches
                 for (let i = 0; i < 4; i++) {
                     if (g[i] === s[i]) {
                         correctPos++;
@@ -740,7 +738,6 @@
                         usedG[i] = true;
                     }
                 }
-                // letter matches (non-position)
                 for (let i = 0; i < 4; i++) {
                     if (usedG[i]) continue;
                     for (let j = 0; j < 4; j++) {
@@ -770,10 +767,8 @@
                     const isMe = g.player_id === state.playerId;
                     const who = isMe ? 'You' : getPlayerLabel(g.player_id);
                     const cls = isMe ? 'me' : 'opponent';
-                    const fb = g.correct_letters !== undefined && g.correct_positions !== undefined ?
-                        `${g.correct_letters}-${g.correct_positions}` :
-                        '?';
-                    const isCorrect = g.is_correct || false;
+                    const fb = g.feedback || '?';
+                    const isCorrect = fb === '4-4';
                     const timeStr = g.created_at ? new Date(g.created_at).toLocaleTimeString([], { hour: '2-digit',
                             minute: '2-digit' }) : '';
                     html += `
@@ -797,7 +792,6 @@
                 gameGameId.textContent = game.id;
                 gameYouLabel.textContent = state.playerName || state.playerId || '—';
 
-                // turn badge
                 const status = game.status;
                 const turn = game.current_turn;
                 const isFinished = status === 'finished';
@@ -819,7 +813,6 @@
                 gameTurnBadge.textContent = badgeText;
                 gameTurnBadge.className = `status-badge ${badgeClass}`;
 
-                // turn hint
                 if (isFinished) {
                     gameTurnHint.textContent = 'Game over.';
                 } else if (isPlaying) {
@@ -831,7 +824,6 @@
                     gameTurnHint.textContent = 'Waiting for the game to start…';
                 }
 
-                // guess input enabled?
                 const canGuess = isPlaying && turn === state.playerId && !isFinished && state.myWordSet;
                 gameGuessInput.disabled = !canGuess;
                 btnSubmitGuess.disabled = !canGuess;
@@ -844,14 +836,13 @@
                     gameGuessInput.placeholder = 'Game over';
                 }
 
-                // show / hide word reveal
                 if (isFinished) {
                     gameWordReveal.classList.remove('hidden');
                     const p1Word = game.player1_word || '????';
                     const p2Word = game.player2_word || '????';
-                    revealP1Label.textContent = game.player1_name || 'P1';
+                    revealP1Label.textContent = game.player1_id || 'P1';
                     revealP1Word.textContent = p1Word;
-                    revealP2Label.textContent = game.player2_name || 'P2';
+                    revealP2Label.textContent = game.player2_id || 'P2';
                     revealP2Word.textContent = p2Word;
                     const winner = game.winner;
                     if (winner === state.playerId) {
@@ -871,20 +862,10 @@
                     gameWordReveal.classList.add('hidden');
                 }
 
-                // update guesses
                 renderGuesses();
 
-                // update lobby status if game is not playing
-                if (status === 'waiting' || status === 'ready') {
-                    // we might be in lobby screen, but we also update game screen
-                    updateLobbyUI();
-                }
-
-                // set myWordSet flag
                 const myWord = getMyWord();
                 state.myWordSet = !!myWord && myWord.length === 4;
-
-                // game over flag
                 state.gameOver = isFinished;
             }
 
@@ -903,12 +884,14 @@
                     lobbyStatusBadge.className = 'status-badge waiting';
                 }
 
-                lobbyP1Name.textContent = game.player1_name || '—';
-                lobbyP2Name.textContent = game.player2_name || '—';
-                lobbyP1Ready.textContent = game.player1_ready ? '✅ ready' : '⏳ not ready';
-                lobbyP1Ready.style.color = game.player1_ready ? '#6abf8a' : '#6a7a98';
-                lobbyP2Ready.textContent = game.player2_ready ? '✅ ready' : '⏳ not ready';
-                lobbyP2Ready.style.color = game.player2_ready ? '#6abf8a' : '#6a7a98';
+                lobbyP1Name.textContent = game.player1_id || '—';
+                lobbyP2Name.textContent = game.player2_id || '—';
+                const p1Ready = isPlayerReady('player1');
+                const p2Ready = isPlayerReady('player2');
+                lobbyP1Ready.textContent = p1Ready ? '✅ ready' : '⏳ not ready';
+                lobbyP1Ready.style.color = p1Ready ? '#6abf8a' : '#6a7a98';
+                lobbyP2Ready.textContent = p2Ready ? '✅ ready' : '⏳ not ready';
+                lobbyP2Ready.style.color = p2Ready ? '#6abf8a' : '#6a7a98';
 
                 const myWord = getMyWord();
                 const wordSet = myWord && myWord.length === 4;
@@ -918,23 +901,20 @@
                 lobbyWordStatus.style.color = wordSet ? '#6abf8a' : '#6a7a98';
                 lobbySubmitWord.textContent = wordSet ? 'Change Word' : 'Set Word';
 
-                const p1Ready = game.player1_ready || false;
-                const p2Ready = game.player2_ready || false;
-                const bothReady = p1Ready && p2Ready && game.player1_name && game.player2_name;
+                const bothReady = p1Ready && p2Ready && game.player1_id && game.player2_id;
                 const myReady = state.playerId === 'player1' ? p1Ready : p2Ready;
 
                 if (status === 'playing' || status === 'finished') {
                     lobbyWaitingMsg.textContent = status === 'playing' ? 'Game in progress…' : 'Game finished.';
                 } else if (bothReady) {
-                    lobbyWaitingMsg.textContent = '✅ Both ready! Game starting…';
-                } else if (game.player1_name && game.player2_name) {
-                    const missing = !p1Ready ? game.player1_name : !p2Ready ? game.player2_name : '';
+                    lobbyWaitingMsg.textContent = '✅ Both ready! Starting game…';
+                } else if (game.player1_id && game.player2_id) {
+                    const missing = !p1Ready ? game.player1_id : !p2Ready ? game.player2_id : '';
                     lobbyWaitingMsg.textContent = `⏳ Waiting for ${missing} to set their word…`;
                 } else {
                     lobbyWaitingMsg.textContent = '⏳ Waiting for opponent to join…';
                 }
 
-                // if game status changed to playing, switch to game screen
                 if (status === 'playing' || status === 'finished') {
                     showScreen(screenGame);
                     updateGameUI();
@@ -969,9 +949,10 @@
                     .from('games')
                     .insert([{
                         id: gameId,
-                        player1_name: playerName,
-                        player1_ready: false,
-                        player2_ready: false,
+                        player1_id: playerName,
+                        player2_id: null,
+                        player1_word: null,
+                        player2_word: null,
                         status: 'waiting',
                         current_turn: null,
                         winner: null,
@@ -984,34 +965,26 @@
 
             // ---------- join game ----------
             async function joinGame(gameId, playerName) {
-                // first, get the game
                 const { data: game, error: fetchErr } = await fetchGame(gameId);
-                if (fetchErr) return { error: 'Game not found. Create a new one.' };
+                if (fetchErr) return { error: 'Game not found. Please check the ID.' };
                 if (game.status === 'finished') return { error: 'Game already finished.' };
                 if (game.status === 'playing') return { error: 'Game already in progress.' };
 
-                // check if player2 slot is free
-                if (game.player2_name && game.player2_name !== playerName) {
-                    return { error: 'Game is full. (Player 2 already joined)' };
-                }
-                // if player2_name is null or matches the current name, allow join
-                const isP2 = game.player2_name === playerName;
-                const isP1 = game.player1_name === playerName;
-                if (isP1) {
-                    // rejoining as player1
+                // check if player already joined
+                if (game.player1_id === playerName) {
                     return { data: game, playerId: 'player1' };
                 }
-                if (isP2) {
+                if (game.player2_id === playerName) {
                     return { data: game, playerId: 'player2' };
                 }
-                if (game.player2_name) {
-                    return { error: 'Game is full.' };
+                if (game.player2_id) {
+                    return { error: 'Game is full. (Player 2 already joined)' };
                 }
 
                 // join as player2
                 const { data: updated, error: updateErr } = await supabase
                     .from('games')
-                    .update({ player2_name: playerName })
+                    .update({ player2_id: playerName })
                     .eq('id', gameId)
                     .select()
                     .single();
@@ -1022,12 +995,10 @@
             // ---------- set word ----------
             async function setWord(gameId, playerId, word) {
                 const field = playerId === 'player1' ? 'player1_word' : 'player2_word';
-                const readyField = playerId === 'player1' ? 'player1_ready' : 'player2_ready';
                 const { data, error } = await supabase
                     .from('games')
                     .update({
                         [field]: word,
-                        [readyField]: true,
                     })
                     .eq('id', gameId)
                     .select()
@@ -1039,7 +1010,6 @@
             // ---------- submit guess ----------
             async function submitGuess(gameId, playerId, guessWord) {
                 const opponentId = playerId === 'player1' ? 'player2' : 'player1';
-                // get the opponent's word from the game
                 const { data: game, error: fetchErr } = await fetchGame(gameId);
                 if (fetchErr || !game) return { error: 'Game not found.' };
                 const opponentWord = opponentId === 'player1' ? game.player1_word : game.player2_word;
@@ -1048,10 +1018,7 @@
                 }
 
                 const feedback = calculateFeedback(guessWord, opponentWord);
-                const parts = feedback.split('-');
-                const correctLetters = parseInt(parts[0], 10);
-                const correctPositions = parseInt(parts[1], 10);
-                const isCorrect = correctLetters === 4 && correctPositions === 4;
+                const isCorrect = feedback === '4-4';
 
                 // insert guess
                 const { data: guess, error: insertErr } = await supabase
@@ -1060,15 +1027,13 @@
                         game_id: gameId,
                         player_id: playerId,
                         guess_word: guessWord,
-                        correct_letters: correctLetters,
-                        correct_positions: correctPositions,
-                        is_correct: isCorrect,
+                        feedback: feedback,
                     }])
                     .select()
                     .single();
                 if (insertErr) return { error: 'Failed to submit guess: ' + insertErr.message };
 
-                // update game: switch turn or finish
+                // update game state
                 let updateData = {};
                 if (isCorrect) {
                     updateData = {
@@ -1082,9 +1047,7 @@
                         current_turn: nextTurn,
                     };
                 }
-
-                // also if game status is 'ready', set to 'playing'
-                if (game.status === 'ready') {
+                if (game.status === 'waiting' || game.status === 'ready') {
                     updateData.status = 'playing';
                 }
 
@@ -1097,13 +1060,14 @@
                 return { data: guess };
             }
 
-            // ---------- check if both ready and start game ----------
+            // ---------- check and start game if both words set ----------
             async function tryStartGame(gameId) {
                 const { data: game, error } = await fetchGame(gameId);
                 if (error || !game) return;
                 if (game.status === 'playing' || game.status === 'finished') return;
-                if (game.player1_ready && game.player2_ready && game.player1_name && game.player2_name) {
-                    // both ready → start game
+                const p1Ready = game.player1_word && game.player1_word.length === 4;
+                const p2Ready = game.player2_word && game.player2_word.length === 4;
+                if (p1Ready && p2Ready && game.player1_id && game.player2_id) {
                     const { error: updateErr } = await supabase
                         .from('games')
                         .update({
@@ -1132,16 +1096,12 @@
                 showScreen(screenJoin);
                 joinMessage.classList.add('hidden');
                 joinMessage.textContent = '';
-                // reset join form
                 joinGameId.value = '';
                 joinPlayerName.value = '';
-                // reset lobby
                 lobbyWordInput.value = '';
                 showToast(lobbyWordMessage, '', '');
-                // reset game
                 gameGuessInput.value = '';
                 showToast(gameGuessMessage, '', '');
-                // clear connection status
                 setConnectionStatus(true, 'ready');
             }
 
@@ -1162,14 +1122,11 @@
                             filter: `id=eq.${gameId}`,
                         },
                         async (payload) => {
-                            // refresh game data
                             const { data, error } = await fetchGame(gameId);
                             if (error) { console.warn('realtime game fetch error:', error); return; }
                             state.game = data;
-                            // also refresh guesses
                             const { data: guesses, error: gErr } = await fetchGuesses(gameId);
                             if (!gErr) state.guesses = guesses || [];
-                            // update UI
                             if (state.game.status === 'playing' || state.game.status === 'finished') {
                                 showScreen(screenGame);
                                 updateGameUI();
@@ -1177,12 +1134,6 @@
                                 showScreen(screenLobby);
                                 updateLobbyUI();
                             }
-                            // if game is now playing, switch to game screen
-                            if (state.game.status === 'playing' || state.game.status === 'finished') {
-                                showScreen(screenGame);
-                                updateGameUI();
-                            }
-                            // if both ready, start game
                             if (state.game.status === 'waiting' || state.game.status === 'ready') {
                                 await tryStartGame(gameId);
                             }
@@ -1201,7 +1152,6 @@
                             if (state.game && (state.game.status === 'playing' || state.game.status ===
                                     'finished')) {
                                 renderGuesses();
-                                // also re-check game state
                                 const { data: gData } = await fetchGame(gameId);
                                 if (gData) state.game = gData;
                                 updateGameUI();
@@ -1222,18 +1172,35 @@
 
             // ---------- join flow ----------
             async function handleJoin(createNew) {
-                const gameId = joinGameId.value.trim().toUpperCase() || 'GAME' + String(Math.random().toString(36).slice(2, 6)
-                    .toUpperCase());
+                let gameId = joinGameId.value.trim();
                 const playerName = joinPlayerName.value.trim() || 'Player' + String(Math.random().toString(36).slice(2, 5)
                     .toUpperCase());
 
-                if (!gameId || gameId.length < 2) {
-                    showToast(joinMessage, 'Please enter a game ID (at least 2 characters).', 'error');
-                    return;
-                }
                 if (!playerName || playerName.length < 1) {
                     showToast(joinMessage, 'Please enter your name.', 'error');
                     return;
+                }
+
+                if (createNew) {
+                    // generate a UUID
+                    gameId = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+                        /[xy]/g, function(c) {
+                            var r = Math.random() * 16 | 0,
+                                v = c == 'x' ? r : (r & 0x3 | 0x8);
+                            return v.toString(16);
+                        });
+                    joinGameId.value = gameId;
+                } else {
+                    if (!gameId) {
+                        showToast(joinMessage, 'Please enter a Game ID (UUID).', 'error');
+                        return;
+                    }
+                    // simple UUID format check (optional)
+                    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+                    if (!uuidRegex.test(gameId)) {
+                        showToast(joinMessage, 'Invalid UUID format. Please enter a valid Game ID.', 'error');
+                        return;
+                    }
                 }
 
                 showToast(joinMessage, 'Connecting…', '');
@@ -1243,7 +1210,6 @@
                 try {
                     let result;
                     if (createNew) {
-                        // check if game exists
                         const { data: existing } = await fetchGame(gameId);
                         if (existing && existing.id) {
                             showToast(joinMessage, 'Game already exists. Try joining instead.', 'error');
@@ -1269,26 +1235,21 @@
                         }
                     }
 
-                    // success
                     state.gameId = gameId;
                     state.playerId = result.playerId;
                     state.playerName = playerName;
                     state.game = result.data;
                     state.guesses = [];
 
-                    // fetch guesses
                     const { data: guesses } = await fetchGuesses(gameId);
                     state.guesses = guesses || [];
 
-                    // setup realtime
                     setupSubscription(gameId);
 
-                    // check if both ready → start game
                     if (state.game.status === 'waiting' || state.game.status === 'ready') {
                         await tryStartGame(gameId);
                     }
 
-                    // show appropriate screen
                     if (state.game.status === 'playing' || state.game.status === 'finished') {
                         showScreen(screenGame);
                         updateGameUI();
@@ -1338,10 +1299,8 @@
                     lobbyWordInput.value = '';
                     updateLobbyUI();
 
-                    // check if both ready → start game
                     await tryStartGame(state.gameId);
 
-                    // if game started, switch to game screen
                     if (state.game.status === 'playing' || state.game.status === 'finished') {
                         showScreen(screenGame);
                         updateGameUI();
@@ -1389,20 +1348,17 @@
                         gameGuessInput.disabled = false;
                         return;
                     }
-                    // success
                     showToast(gameGuessMessage, '✅ Guess submitted!', 'success');
                     gameGuessInput.value = '';
                     btnSubmitGuess.disabled = false;
                     gameGuessInput.disabled = false;
 
-                    // refresh data
                     const { data: gData } = await fetchGame(state.gameId);
                     if (gData) state.game = gData;
                     const { data: guesses } = await fetchGuesses(state.gameId);
                     if (guesses) state.guesses = guesses;
                     updateGameUI();
 
-                    // check if game is over
                     if (state.game.status === 'finished') {
                         showToast(gameGuessMessage, '🏁 Game over!', 'success');
                     }
@@ -1424,10 +1380,8 @@
 
             // ---------- init ----------
             function init() {
-                // connection
                 setConnectionStatus(true, 'ready');
 
-                // buttons
                 btnJoin.addEventListener('click', () => handleJoin(false));
                 btnCreate.addEventListener('click', () => handleJoin(true));
                 lobbySubmitWord.addEventListener('click', handleSetWord);
@@ -1437,25 +1391,19 @@
                 });
 
                 setupEnterKeys();
-
-                // auto-focus
                 joinGameId.focus();
 
-                // check URL params ?game=XXX
                 const params = new URLSearchParams(window.location.search);
                 const gameParam = params.get('game');
                 if (gameParam) {
-                    joinGameId.value = gameParam.toUpperCase();
+                    joinGameId.value = gameParam;
                     joinPlayerName.focus();
                 }
 
-                // show join screen
                 showScreen(screenJoin);
             }
 
-            // ---------- start ----------
             document.addEventListener('DOMContentLoaded', init);
-            // if DOM already loaded
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', init);
             } else {
