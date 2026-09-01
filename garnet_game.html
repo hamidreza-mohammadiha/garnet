@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>garnet — 4‑letter word duel</title>
+
+    <!-- Supabase client from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
+    </script>
+
+    <style>
+        /* ---------- reset & base ---------- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0b0e14;
+            color: #e8edf5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            margin: 0;
+        }
+        #app {
+            max-width: 720px;
+            width: 100%;
+            background: #141a24;
+            border-radius: 28px;
+            padding: 28px 24px 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04);
+            transition: opacity 0.2s;
+        }
+
+        /* ---------- typography ---------- */
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        h1 small {
+            font-weight: 400;
+            font-size: 14px;
+            color: #8896b0;
+            letter-spacing: 0;
+        }
+        .subtitle {
+            color: #8896b0;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+        .label {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #7a8aa8;
+            margin-bottom: 4px;
+        }
+
+        /* ---------- cards / panels ---------- */
+        .panel {
+            background: #1c232f;
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-top: 16px;
+            border: 1px solid #2a3342;
+        }
+        .panel-title {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 10px;
+            color: #bcc9e0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-title .badge {
+            background: #2f3b4e;
+            font-size: 11px;
+            padding: 0 10px;
+            border-radius: 20px;
+            color: #b0c0d8;
+        }
+
+        /* ---------- inputs & buttons ---------- */
+        input,
+        select {
+            background: #0f141e;
+            border: 1px solid #2a3342;
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: #e8edf5;
+            font-size: 16px;
+            width: 100%;
+            transition: border 0.15s;
+            outline: none;
+            font-family: inherit;
+        }
+        input:focus {
+            border-color: #6b7fa0;
+        }
+        input::placeholder {
+            color: #4a5a78;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .input-group input {
+            flex: 1;
+            min-width: 120px;
+        }
+        .input-group button {
+            flex-shrink: 0;
+        }
+
+        button {
+            background: #2f3b52;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 22px;
+            font-weight: 600;
+            font-size: 15px;
+            color: #e8edf5;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.05s;
+            font-family: inherit;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+        button:hover:not(:disabled) {
+            background: #3e4d68;
+        }
+        button:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+        button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+        button.primary {
+            background: #5b7bbf;
+            color: #fff;
+        }
+        button.primary:hover:not(:disabled) {
+            background: #6f8fd4;
+        }
+        button.success {
+            background: #3b8f6a;
+            color: #fff;
+        }
+        button.success:hover:not(:disabled) {
+            background: #47a57c;
+        }
+        button.danger {
+            background: #b5554a;
+            color: #fff;
+        }
+        button.danger:hover:not(:disabled) {
+            background: #cc6a5e;
+        }
+        button.gold {
+            background: #b8943a;
+            color: #fff;
+        }
+        button.gold:hover:not(:disabled) {
+            background: #d4ae4a;
+        }
+
+        /* ---------- game status ---------- */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            background: #1c232f;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            border: 1px solid #2a3342;
+        }
+        .status-bar .game-id {
+            font-weight: 600;
+            color: #bcc9e0;
+            font-size: 14px;
+        }
+        .status-bar .game-id span {
+            background: #0f141e;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-size: 15px;
+            color: #d0def0;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #2a3342;
+            color: #b0c0d8;
+        }
+        .status-badge.playing {
+            background: #2d5a4a;
+            color: #8fd4b4;
+        }
+        .status-badge.waiting {
+            background: #5a4a2d;
+            color: #d4be8f;
+        }
+        .status-badge.finished {
+            background: #4a2d5a;
+            color: #c88fd4;
+        }
+        .status-badge.your-turn {
+            background: #2d4a6a;
+            color: #8fc4d4;
+            animation: pulse-glow 1.4s infinite alternate;
+        }
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(91, 123, 191, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 12px 4px rgba(91, 123, 191, 0.15);
+            }
+        }
+
+        /* ---------- guess history ---------- */
+        .guess-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 340px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .guess-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .guess-list::-webkit-scrollbar-track {
+            background: #0f141e;
+            border-radius: 10px;
+        }
+        .guess-list::-webkit-scrollbar-thumb {
+            background: #2f3b52;
+            border-radius: 10px;
+        }
+
+        .guess-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #0f141e;
+            border-radius: 10px;
+            padding: 8px 14px 8px 16px;
+            border-left: 3px solid #2f3b52;
+            animation: slide-in 0.2s ease;
+        }
+        .guess-item.me {
+            border-left-color: #5b7bbf;
+        }
+        .guess-item.opponent {
+            border-left-color: #b8943a;
+        }
+        .guess-item .who {
+            font-weight: 600;
+            font-size: 13px;
+            min-width: 48px;
+            color: #8896b0;
+        }
+        .guess-item .word {
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 2px;
+            background: #1c232f;
+            padding: 0 10px;
+            border-radius: 6px;
+            color: #e8edf5;
+        }
+        .guess-item .feedback {
+            font-weight: 700;
+            font-size: 18px;
+            color: #d4e07a;
+            background: #1e2a1e;
+            padding: 0 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin-left: auto;
+        }
+        .guess-item .feedback.correct {
+            color: #7ad4a0;
+            background: #1a2a22;
+        }
+        .guess-item .time {
+            font-size: 11px;
+            color: #4a5a78;
+            margin-left: 6px;
+        }
+        @keyframes slide-in {
+            0% {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- word reveal ---------- */
+        .word-reveal {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 8px 0 4px;
+            flex-wrap: wrap;
+        }
+        .word-reveal .box {
+            background: #0f141e;
+            padding: 6px 18px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #2a3342;
+        }
+        .word-reveal .box .label {
+            font-size: 11px;
+            color: #6a7a98;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .word-reveal .box .value {
+            font-family: 'Courier New', monospace;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: #d4e07a;
+        }
+
+        /* ---------- utility ---------- */
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-12 {
+            margin-top: 12px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .flex {
+            display: flex;
+        }
+        .flex-center {
+            align-items: center;
+            justify-content: center;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .gap-12 {
+            gap: 12px;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-muted {
+            color: #6a7a98;
+        }
+        .text-sm {
+            font-size: 14px;
+        }
+        .w-full {
+            width: 100%;
+        }
+
+        /* ---------- responsive ---------- */
+        @media (max-width: 480px) {
+            #app {
+                padding: 18px 14px 22px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+            .guess-item .word {
+                font-size: 15px;
+                letter-spacing: 1px;
+            }
+            .guess-item .feedback {
+                font-size: 15px;
+                padding: 0 8px;
+            }
+            .panel {
+                padding: 14px 14px;
+            }
+            .status-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .input-group button {
+                width: 100%;
+            }
+            .word-reveal .box .value {
+                font-size: 20px;
+            }
+        }
+
+        /* ---------- hidden helper ---------- */
+        .hidden {
+            display: none !important;
+        }
+
+        /* ---------- loading spinner ---------- */
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #2a3342;
+            border-top: 2px solid #5b7bbf;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* small toast-like inline */
+        .toast {
+            background: #1e2a3a;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 14px;
+            color: #bcc9e0;
+            border-left: 3px solid #5b7bbf;
+            margin-top: 10px;
+        }
+        .toast.error {
+            border-left-color: #b5554a;
+            color: #e8b0a8;
+        }
+        .toast.success {
+            border-left-color: #3b8f6a;
+            color: #a8d4be;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;">
+            <h1>◆ garnet <small>4‑letter duel</small></h1>
+            <div id="connectionStatus" style="font-size:13px;color:#6a7a98;display:flex;align-items:center;gap:6px;">
+                <span class="spinner" id="connSpinner" style="width:14px;height:14px;border-width:2px;"></span>
+                <span id="connLabel">connecting…</span>
+            </div>
+        </div>
+
+        <!-- ============ SCREEN: join ============ -->
+        <div id="screenJoin">
+            <div class="panel" style="margin-top:20px;">
+                <div class="panel-title">🎯 Enter a game</div>
+                <div class="input-group">
+                    <input id="joinGameId" type="text" placeholder="Game ID (e.g. ABC123)" value="" maxlength="20" style="flex:1;min-width:100px;" />
+                    <input id="joinPlayerName" type="text" placeholder="Your name" value="" maxlength="20" style="flex:1;min-width:100px;" />
+                </div>
+                <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+                    <button id="btnJoin" class="primary" style="flex:1;">Join Game</button>
+                    <button id="btnCreate" class="primary" style="flex:1;">Create New</button>
+                </div>
+                <div id="joinMessage" class="toast hidden" style="margin-top:12px;"></div>
+                <div style="margin-top:12px;font-size:13px;color:#5a6a88;text-align:center;">
+                    Use any game ID. Share it with a friend to play.
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ SCREEN: waiting / word pick ============ -->
+        <div id="screenLobby" class="hidden">
+            <div class="status-bar">
+                <div class="game-id">🆔 <span id="lobbyGameId">—</span></div>
+                <div>
+                    <span class="status-badge waiting" id="lobbyStatusBadge">⏳ waiting</span>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;">
+                <div class="panel-title">👥 Players</div>
+                <div id="lobbyPlayers" style="display:flex;gap:16px;flex-wrap:wrap;">
+                    <div style="background:#0f141e;padding:8px 16px;border-radius:10px;border:1px solid #2a3342;">
+                        <div style="font-size:12px;color:#6a7a98;">Player 1</div>
+                        <div id="lobbyP1Name" style="font-weight:600;">—</div>
+                        <div id="lobbyP1Ready" style="font-size:13px;color:#4a6a5a;">⏳ not ready</div>
+                    </div>
+                    <div style="background:#0f141e;padding:8px 16px;border-radius:10px;border:1px solid #2a3342;">
+                        <div style="font-size:12px;color:#6a7a98;">Player 2</div>
+                        <div id="lobbyP2Name" style="font-weight:600;">—</div>
+                        <div id="lobbyP2Ready" style="font-size:13px;color:#4a6a5a;">⏳ not ready</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;">
+                <div class="panel-title">✏️ Your secret word</div>
+                <div class="input-group">
+                    <input id="lobbyWordInput" type="text" placeholder="4-letter word" maxlength="4" style="flex:1;min-width:100px;text-transform:uppercase;font-family:monospace;font-size:20px;letter-spacing:3px;" />
+                    <button id="lobbySubmitWord" class="primary">Set Word</button>
+                </div>
+                <div id="lobbyWordStatus" style="font-size:13px;color:#6a7a98;margin-top:6px;">Choose a 4‑letter word. Keep it secret!</div>
+                <div id="lobbyWordMessage" class="toast hidden" style="margin-top:8px;"></div>
+            </div>
+
+            <div style="margin-top:12px;text-align:center;font-size:14px;color:#5a6a88;" id="lobbyWaitingMsg">
+                Waiting for both players to set their words…
+            </div>
+        </div>
+
+        <!-- ============ SCREEN: game ============ -->
+        <div id="screenGame" class="hidden">
+            <div class="status-bar">
+                <div class="game-id">🆔 <span id="gameGameId">—</span></div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span id="gameTurnBadge" class="status-badge waiting">⏳ waiting</span>
+                    <span id="gamePlayerLabel" style="font-size:13px;color:#8896b0;">You: <strong id="gameYouLabel">—</strong></span>
+                </div>
+            </div>
+
+            <!-- word reveal (only when finished) -->
+            <div id="gameWordReveal" class="hidden" style="margin-top:12px;">
+                <div class="panel" style="border-color:#3b8f6a;">
+                    <div class="panel-title">🏆 Words revealed</div>
+                    <div class="word-reveal">
+                        <div class="box"><div class="label" id="revealP1Label">P1</div><div class="value" id="revealP1Word">????</div></div>
+                        <div class="box"><div class="label" id="revealP2Label">P2</div><div class="value" id="revealP2Word">????</div></div>
+                    </div>
+                    <div id="gameWinnerDisplay" style="text-align:center;font-size:18px;font-weight:700;margin-top:6px;color:#d4e07a;"></div>
+                </div>
+            </div>
+
+            <!-- guess history -->
+            <div class="panel" style="margin-top:12px;">
+                <div class="panel-title">📋 Guess history</div>
+                <div id="guessContainer" class="guess-list">
+                    <div style="color:#5a6a88;text-align:center;padding:20px 0;font-size:14px;">No guesses yet.</div>
+                </div>
+            </div>
+
+            <!-- guess input -->
+            <div class="panel" style="margin-top:12px;" id="gameInputPanel">
+                <div class="panel-title">🔍 Your guess</div>
+                <div class="input-group">
+                    <input id="gameGuessInput" type="text" placeholder="4-letter word" maxlength="4" style="flex:1;min-width:100px;text-transform:uppercase;font-family:monospace;font-size:20px;letter-spacing:3px;" />
+                    <button id="btnSubmitGuess" class="primary">Guess</button>
+                </div>
+                <div id="gameGuessMessage" class="toast hidden" style="margin-top:8px;"></div>
+                <div id="gameTurnHint" style="font-size:13px;color:#6a7a98;margin-top:6px;">Wait for your turn to guess.</div>
+            </div>
+
+            <!-- bottom action -->
+            <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+                <button id="btnLeaveGame" class="danger" style="flex:1;">Leave Game</button>
+            </div>
+        </div>
+
+        <!-- ============ SCREEN: game over (embedded in game screen) ============ -->
+        <!-- we show winner inside game screen via word reveal panel -->
+    </div>
+
+    <!-- ============================================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ---------- Supabase ----------
+            const SUPABASE_URL = 'https://ongyncudlvdfjsdbalrc.supabase.co';
+            const SUPABASE_KEY = 'sb_publishable_kSyx8zyndDMuiebcHfPbAQ_LpfLoY21';
+
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            // ---------- DOM refs ----------
+            const $ = (id) => document.getElementById(id);
+
+            const screenJoin = $('screenJoin');
+            const screenLobby = $('screenLobby');
+            const screenGame = $('screenGame');
+
+            const joinGameId = $('joinGameId');
+            const joinPlayerName = $('joinPlayerName');
+            const btnJoin = $('btnJoin');
+            const btnCreate = $('btnCreate');
+            const joinMessage = $('joinMessage');
+
+            const lobbyGameId = $('lobbyGameId');
+            const lobbyStatusBadge = $('lobbyStatusBadge');
+            const lobbyP1Name = $('lobbyP1Name');
+            const lobbyP2Name = $('lobbyP2Name');
+            const lobbyP1Ready = $('lobbyP1Ready');
+            const lobbyP2Ready = $('lobbyP2Ready');
+            const lobbyWordInput = $('lobbyWordInput');
+            const lobbySubmitWord = $('lobbySubmitWord');
+            const lobbyWordStatus = $('lobbyWordStatus');
+            const lobbyWordMessage = $('lobbyWordMessage');
+            const lobbyWaitingMsg = $('lobbyWaitingMsg');
+
+            const gameGameId = $('gameGameId');
+            const gameTurnBadge = $('gameTurnBadge');
+            const gameYouLabel = $('gameYouLabel');
+            const gameWordReveal = $('gameWordReveal');
+            const revealP1Label = $('revealP1Label');
+            const revealP1Word = $('revealP1Word');
+            const revealP2Label = $('revealP2Label');
+            const revealP2Word = $('revealP2Word');
+            const gameWinnerDisplay = $('gameWinnerDisplay');
+            const guessContainer = $('guessContainer');
+            const gameGuessInput = $('gameGuessInput');
+            const btnSubmitGuess = $('btnSubmitGuess');
+            const gameGuessMessage = $('gameGuessMessage');
+            const gameTurnHint = $('gameTurnHint');
+            const btnLeaveGame = $('btnLeaveGame');
+
+            const connSpinner = $('connSpinner');
+            const connLabel = $('connLabel');
+
+            // ---------- state ----------
+            let state = {
+                gameId: null,
+                playerId: null, // 'player1' or 'player2'
+                playerName: null,
+                game: null, // full game record
+                guesses: [], // array of guess objects
+                subscription: null,
+                myWordSet: false,
+                isMyTurn: false,
+                gameOver: false,
+            };
+
+            // ---------- helpers ----------
+            function showScreen(screen) {
+                [screenJoin, screenLobby, screenGame].forEach(el => el.classList.add('hidden'));
+                if (screen) screen.classList.remove('hidden');
+            }
+
+            function setConnectionStatus(ok, msg) {
+                connSpinner.classList.toggle('hidden', ok);
+                connLabel.textContent = msg || (ok ? 'connected' : 'connecting…');
+                connLabel.style.color = ok ? '#6a9a7a' : '#6a7a98';
+            }
+
+            function showToast(el, msg, type) {
+                if (!msg) { el.classList.add('hidden');
+                    el.textContent = ''; return; }
+                el.classList.remove('hidden', 'error', 'success');
+                if (type) el.classList.add(type);
+                el.textContent = msg;
+            }
+
+            function getWordFromInput(input) {
+                return input.value.trim().toUpperCase().slice(0, 4);
+            }
+
+            function isValidWord(word) {
+                return /^[A-Z]{4}$/.test(word);
+            }
+
+            function getPlayerLabel(playerId) {
+                if (!state.game) return '—';
+                if (playerId === 'player1') return state.game.player1_name || 'P1';
+                if (playerId === 'player2') return state.game.player2_name || 'P2';
+                return '—';
+            }
+
+            function getOpponentId() {
+                return state.playerId === 'player1' ? 'player2' : 'player1';
+            }
+
+            function getOpponentWord() {
+                if (!state.game) return null;
+                return state.playerId === 'player1' ? state.game.player2_word : state.game.player1_word;
+            }
+
+            function getMyWord() {
+                if (!state.game) return null;
+                return state.playerId === 'player1' ? state.game.player1_word : state.game.player2_word;
+            }
+
+            function getCurrentTurnName() {
+                if (!state.game) return '—';
+                const turn = state.game.current_turn;
+                if (!turn) return '—';
+                return getPlayerLabel(turn);
+            }
+
+            function isPlayerReady(playerId) {
+                if (!state.game) return false;
+                return playerId === 'player1' ? state.game.player1_ready : state.game.player2_ready;
+            }
+
+            // ---------- feedback calculation ----------
+            function calculateFeedback(guess, secret) {
+                if (!guess || !secret || guess.length !== 4 || secret.length !== 4) return '0-0';
+                const g = guess.toUpperCase().split('');
+                const s = secret.toUpperCase().split('');
+                let correctPos = 0;
+                let correctLetters = 0;
+                const usedS = [false, false, false, false];
+                const usedG = [false, false, false, false];
+
+                // exact matches
+                for (let i = 0; i < 4; i++) {
+                    if (g[i] === s[i]) {
+                        correctPos++;
+                        usedS[i] = true;
+                        usedG[i] = true;
+                    }
+                }
+                // letter matches (non-position)
+                for (let i = 0; i < 4; i++) {
+                    if (usedG[i]) continue;
+                    for (let j = 0; j < 4; j++) {
+                        if (usedS[j]) continue;
+                        if (g[i] === s[j]) {
+                            correctLetters++;
+                            usedS[j] = true;
+                            break;
+                        }
+                    }
+                }
+                return `${correctLetters}-${correctPos}`;
+            }
+
+            // ---------- render guess list ----------
+            function renderGuesses() {
+                const container = guessContainer;
+                const guesses = state.guesses || [];
+                if (guesses.length === 0) {
+                    container.innerHTML =
+                        `<div style="color:#5a6a88;text-align:center;padding:20px 0;font-size:14px;">No guesses yet.</div>`;
+                    return;
+                }
+
+                let html = '';
+                for (const g of guesses) {
+                    const isMe = g.player_id === state.playerId;
+                    const who = isMe ? 'You' : getPlayerLabel(g.player_id);
+                    const cls = isMe ? 'me' : 'opponent';
+                    const fb = g.correct_letters !== undefined && g.correct_positions !== undefined ?
+                        `${g.correct_letters}-${g.correct_positions}` :
+                        '?';
+                    const isCorrect = g.is_correct || false;
+                    const timeStr = g.created_at ? new Date(g.created_at).toLocaleTimeString([], { hour: '2-digit',
+                            minute: '2-digit' }) : '';
+                    html += `
+                        <div class="guess-item ${cls}">
+                            <span class="who">${who}</span>
+                            <span class="word">${g.guess_word || '????'}</span>
+                            <span class="feedback ${isCorrect ? 'correct' : ''}">${isCorrect ? '✓' : ''} ${fb}</span>
+                            ${timeStr ? `<span class="time">${timeStr}</span>` : ''}
+                        </div>
+                    `;
+                }
+                container.innerHTML = html;
+                container.scrollTop = container.scrollHeight;
+            }
+
+            // ---------- update game UI ----------
+            function updateGameUI() {
+                const game = state.game;
+                if (!game) return;
+
+                gameGameId.textContent = game.id;
+                gameYouLabel.textContent = state.playerName || state.playerId || '—';
+
+                // turn badge
+                const status = game.status;
+                const turn = game.current_turn;
+                const isFinished = status === 'finished';
+                const isPlaying = status === 'playing';
+
+                let badgeText = '⏳ waiting';
+                let badgeClass = 'waiting';
+                if (isFinished) {
+                    badgeText = '🏁 finished';
+                    badgeClass = 'finished';
+                } else if (isPlaying) {
+                    const isMyTurn = turn === state.playerId;
+                    badgeText = isMyTurn ? '▶️ Your turn!' : `⏳ ${getPlayerLabel(turn)}'s turn`;
+                    badgeClass = isMyTurn ? 'your-turn' : 'playing';
+                } else {
+                    badgeText = '⏳ waiting…';
+                    badgeClass = 'waiting';
+                }
+                gameTurnBadge.textContent = badgeText;
+                gameTurnBadge.className = `status-badge ${badgeClass}`;
+
+                // turn hint
+                if (isFinished) {
+                    gameTurnHint.textContent = 'Game over.';
+                } else if (isPlaying) {
+                    const isMyTurn = turn === state.playerId;
+                    gameTurnHint.textContent = isMyTurn ?
+                        'It\'s your turn! Enter a 4‑letter guess.' :
+                        `Waiting for ${getPlayerLabel(turn)} to guess…`;
+                } else {
+                    gameTurnHint.textContent = 'Waiting for the game to start…';
+                }
+
+                // guess input enabled?
+                const canGuess = isPlaying && turn === state.playerId && !isFinished && state.myWordSet;
+                gameGuessInput.disabled = !canGuess;
+                btnSubmitGuess.disabled = !canGuess;
+                if (!canGuess && !isFinished) {
+                    gameGuessInput.placeholder = isPlaying ? 'Wait for your turn…' : 'Game not started…';
+                } else if (canGuess) {
+                    gameGuessInput.placeholder = '4-letter word';
+                }
+                if (isFinished) {
+                    gameGuessInput.placeholder = 'Game over';
+                }
+
+                // show / hide word reveal
+                if (isFinished) {
+                    gameWordReveal.classList.remove('hidden');
+                    const p1Word = game.player1_word || '????';
+                    const p2Word = game.player2_word || '????';
+                    revealP1Label.textContent = game.player1_name || 'P1';
+                    revealP1Word.textContent = p1Word;
+                    revealP2Label.textContent = game.player2_name || 'P2';
+                    revealP2Word.textContent = p2Word;
+                    const winner = game.winner;
+                    if (winner === state.playerId) {
+                        gameWinnerDisplay.textContent = '🎉 You won! 🎉';
+                        gameWinnerDisplay.style.color = '#d4e07a';
+                    } else if (winner && winner !== state.playerId) {
+                        gameWinnerDisplay.textContent = `${getPlayerLabel(winner)} won!`;
+                        gameWinnerDisplay.style.color = '#d4a07a';
+                    } else if (winner) {
+                        gameWinnerDisplay.textContent = `${getPlayerLabel(winner)} won!`;
+                        gameWinnerDisplay.style.color = '#d4a07a';
+                    } else {
+                        gameWinnerDisplay.textContent = 'Game over.';
+                        gameWinnerDisplay.style.color = '#8896b0';
+                    }
+                } else {
+                    gameWordReveal.classList.add('hidden');
+                }
+
+                // update guesses
+                renderGuesses();
+
+                // update lobby status if game is not playing
+                if (status === 'waiting' || status === 'ready') {
+                    // we might be in lobby screen, but we also update game screen
+                    updateLobbyUI();
+                }
+
+                // set myWordSet flag
+                const myWord = getMyWord();
+                state.myWordSet = !!myWord && myWord.length === 4;
+
+                // game over flag
+                state.gameOver = isFinished;
+            }
+
+            // ---------- update lobby UI ----------
+            function updateLobbyUI() {
+                const game = state.game;
+                if (!game) return;
+
+                lobbyGameId.textContent = game.id;
+                const status = game.status;
+                if (status === 'playing' || status === 'finished') {
+                    lobbyStatusBadge.textContent = status === 'playing' ? '▶️ playing' : '🏁 finished';
+                    lobbyStatusBadge.className = `status-badge ${status === 'playing' ? 'playing' : 'finished'}`;
+                } else {
+                    lobbyStatusBadge.textContent = '⏳ waiting…';
+                    lobbyStatusBadge.className = 'status-badge waiting';
+                }
+
+                lobbyP1Name.textContent = game.player1_name || '—';
+                lobbyP2Name.textContent = game.player2_name || '—';
+                lobbyP1Ready.textContent = game.player1_ready ? '✅ ready' : '⏳ not ready';
+                lobbyP1Ready.style.color = game.player1_ready ? '#6abf8a' : '#6a7a98';
+                lobbyP2Ready.textContent = game.player2_ready ? '✅ ready' : '⏳ not ready';
+                lobbyP2Ready.style.color = game.player2_ready ? '#6abf8a' : '#6a7a98';
+
+                const myWord = getMyWord();
+                const wordSet = myWord && myWord.length === 4;
+                lobbyWordStatus.textContent = wordSet ?
+                    `✅ Your word is set (${'●'.repeat(4)})` :
+                    'Choose a 4‑letter word. Keep it secret!';
+                lobbyWordStatus.style.color = wordSet ? '#6abf8a' : '#6a7a98';
+                lobbySubmitWord.textContent = wordSet ? 'Change Word' : 'Set Word';
+
+                const p1Ready = game.player1_ready || false;
+                const p2Ready = game.player2_ready || false;
+                const bothReady = p1Ready && p2Ready && game.player1_name && game.player2_name;
+                const myReady = state.playerId === 'player1' ? p1Ready : p2Ready;
+
+                if (status === 'playing' || status === 'finished') {
+                    lobbyWaitingMsg.textContent = status === 'playing' ? 'Game in progress…' : 'Game finished.';
+                } else if (bothReady) {
+                    lobbyWaitingMsg.textContent = '✅ Both ready! Game starting…';
+                } else if (game.player1_name && game.player2_name) {
+                    const missing = !p1Ready ? game.player1_name : !p2Ready ? game.player2_name : '';
+                    lobbyWaitingMsg.textContent = `⏳ Waiting for ${missing} to set their word…`;
+                } else {
+                    lobbyWaitingMsg.textContent = '⏳ Waiting for opponent to join…';
+                }
+
+                // if game status changed to playing, switch to game screen
+                if (status === 'playing' || status === 'finished') {
+                    showScreen(screenGame);
+                    updateGameUI();
+                }
+            }
+
+            // ---------- fetch game ----------
+            async function fetchGame(gameId) {
+                const { data, error } = await supabase
+                    .from('games')
+                    .select('*')
+                    .eq('id', gameId)
+                    .single();
+                if (error) return { error };
+                return { data };
+            }
+
+            // ---------- fetch guesses ----------
+            async function fetchGuesses(gameId) {
+                const { data, error } = await supabase
+                    .from('guesses')
+                    .select('*')
+                    .eq('game_id', gameId)
+                    .order('created_at', { ascending: true });
+                if (error) return { error };
+                return { data: data || [] };
+            }
+
+            // ---------- create game ----------
+            async function createGame(gameId, playerName) {
+                const { data, error } = await supabase
+                    .from('games')
+                    .insert([{
+                        id: gameId,
+                        player1_name: playerName,
+                        player1_ready: false,
+                        player2_ready: false,
+                        status: 'waiting',
+                        current_turn: null,
+                        winner: null,
+                    }])
+                    .select()
+                    .single();
+                if (error) return { error };
+                return { data };
+            }
+
+            // ---------- join game ----------
+            async function joinGame(gameId, playerName) {
+                // first, get the game
+                const { data: game, error: fetchErr } = await fetchGame(gameId);
+                if (fetchErr) return { error: 'Game not found. Create a new one.' };
+                if (game.status === 'finished') return { error: 'Game already finished.' };
+                if (game.status === 'playing') return { error: 'Game already in progress.' };
+
+                // check if player2 slot is free
+                if (game.player2_name && game.player2_name !== playerName) {
+                    return { error: 'Game is full. (Player 2 already joined)' };
+                }
+                // if player2_name is null or matches the current name, allow join
+                const isP2 = game.player2_name === playerName;
+                const isP1 = game.player1_name === playerName;
+                if (isP1) {
+                    // rejoining as player1
+                    return { data: game, playerId: 'player1' };
+                }
+                if (isP2) {
+                    return { data: game, playerId: 'player2' };
+                }
+                if (game.player2_name) {
+                    return { error: 'Game is full.' };
+                }
+
+                // join as player2
+                const { data: updated, error: updateErr } = await supabase
+                    .from('games')
+                    .update({ player2_name: playerName })
+                    .eq('id', gameId)
+                    .select()
+                    .single();
+                if (updateErr) return { error: 'Failed to join: ' + updateErr.message };
+                return { data: updated, playerId: 'player2' };
+            }
+
+            // ---------- set word ----------
+            async function setWord(gameId, playerId, word) {
+                const field = playerId === 'player1' ? 'player1_word' : 'player2_word';
+                const readyField = playerId === 'player1' ? 'player1_ready' : 'player2_ready';
+                const { data, error } = await supabase
+                    .from('games')
+                    .update({
+                        [field]: word,
+                        [readyField]: true,
+                    })
+                    .eq('id', gameId)
+                    .select()
+                    .single();
+                if (error) return { error };
+                return { data };
+            }
+
+            // ---------- submit guess ----------
+            async function submitGuess(gameId, playerId, guessWord) {
+                const opponentId = playerId === 'player1' ? 'player2' : 'player1';
+                // get the opponent's word from the game
+                const { data: game, error: fetchErr } = await fetchGame(gameId);
+                if (fetchErr || !game) return { error: 'Game not found.' };
+                const opponentWord = opponentId === 'player1' ? game.player1_word : game.player2_word;
+                if (!opponentWord || opponentWord.length !== 4) {
+                    return { error: 'Opponent has not set their word yet.' };
+                }
+
+                const feedback = calculateFeedback(guessWord, opponentWord);
+                const parts = feedback.split('-');
+                const correctLetters = parseInt(parts[0], 10);
+                const correctPositions = parseInt(parts[1], 10);
+                const isCorrect = correctLetters === 4 && correctPositions === 4;
+
+                // insert guess
+                const { data: guess, error: insertErr } = await supabase
+                    .from('guesses')
+                    .insert([{
+                        game_id: gameId,
+                        player_id: playerId,
+                        guess_word: guessWord,
+                        correct_letters: correctLetters,
+                        correct_positions: correctPositions,
+                        is_correct: isCorrect,
+                    }])
+                    .select()
+                    .single();
+                if (insertErr) return { error: 'Failed to submit guess: ' + insertErr.message };
+
+                // update game: switch turn or finish
+                let updateData = {};
+                if (isCorrect) {
+                    updateData = {
+                        status: 'finished',
+                        winner: playerId,
+                        current_turn: null,
+                    };
+                } else {
+                    const nextTurn = playerId === 'player1' ? 'player2' : 'player1';
+                    updateData = {
+                        current_turn: nextTurn,
+                    };
+                }
+
+                // also if game status is 'ready', set to 'playing'
+                if (game.status === 'ready') {
+                    updateData.status = 'playing';
+                }
+
+                const { error: updateErr } = await supabase
+                    .from('games')
+                    .update(updateData)
+                    .eq('id', gameId);
+                if (updateErr) return { error: 'Failed to update game: ' + updateErr.message };
+
+                return { data: guess };
+            }
+
+            // ---------- check if both ready and start game ----------
+            async function tryStartGame(gameId) {
+                const { data: game, error } = await fetchGame(gameId);
+                if (error || !game) return;
+                if (game.status === 'playing' || game.status === 'finished') return;
+                if (game.player1_ready && game.player2_ready && game.player1_name && game.player2_name) {
+                    // both ready → start game
+                    const { error: updateErr } = await supabase
+                        .from('games')
+                        .update({
+                            status: 'playing',
+                            current_turn: 'player1',
+                        })
+                        .eq('id', gameId);
+                    if (updateErr) console.warn('start game error:', updateErr);
+                }
+            }
+
+            // ---------- leave / reset ----------
+            function leaveGame() {
+                if (state.subscription) {
+                    supabase.removeChannel(state.subscription);
+                    state.subscription = null;
+                }
+                state.gameId = null;
+                state.playerId = null;
+                state.playerName = null;
+                state.game = null;
+                state.guesses = [];
+                state.myWordSet = false;
+                state.isMyTurn = false;
+                state.gameOver = false;
+                showScreen(screenJoin);
+                joinMessage.classList.add('hidden');
+                joinMessage.textContent = '';
+                // reset join form
+                joinGameId.value = '';
+                joinPlayerName.value = '';
+                // reset lobby
+                lobbyWordInput.value = '';
+                showToast(lobbyWordMessage, '', '');
+                // reset game
+                gameGuessInput.value = '';
+                showToast(gameGuessMessage, '', '');
+                // clear connection status
+                setConnectionStatus(true, 'ready');
+            }
+
+            // ---------- setup realtime subscription ----------
+            function setupSubscription(gameId) {
+                if (state.subscription) {
+                    supabase.removeChannel(state.subscription);
+                    state.subscription = null;
+                }
+
+                const channel = supabase
+                    .channel(`game:${gameId}`)
+                    .on(
+                        'postgres_changes', {
+                            event: '*',
+                            schema: 'public',
+                            table: 'games',
+                            filter: `id=eq.${gameId}`,
+                        },
+                        async (payload) => {
+                            // refresh game data
+                            const { data, error } = await fetchGame(gameId);
+                            if (error) { console.warn('realtime game fetch error:', error); return; }
+                            state.game = data;
+                            // also refresh guesses
+                            const { data: guesses, error: gErr } = await fetchGuesses(gameId);
+                            if (!gErr) state.guesses = guesses || [];
+                            // update UI
+                            if (state.game.status === 'playing' || state.game.status === 'finished') {
+                                showScreen(screenGame);
+                                updateGameUI();
+                            } else {
+                                showScreen(screenLobby);
+                                updateLobbyUI();
+                            }
+                            // if game is now playing, switch to game screen
+                            if (state.game.status === 'playing' || state.game.status === 'finished') {
+                                showScreen(screenGame);
+                                updateGameUI();
+                            }
+                            // if both ready, start game
+                            if (state.game.status === 'waiting' || state.game.status === 'ready') {
+                                await tryStartGame(gameId);
+                            }
+                        }
+                    )
+                    .on(
+                        'postgres_changes', {
+                            event: '*',
+                            schema: 'public',
+                            table: 'guesses',
+                            filter: `game_id=eq.${gameId}`,
+                        },
+                        async () => {
+                            const { data, error } = await fetchGuesses(gameId);
+                            if (!error) state.guesses = data || [];
+                            if (state.game && (state.game.status === 'playing' || state.game.status ===
+                                    'finished')) {
+                                renderGuesses();
+                                // also re-check game state
+                                const { data: gData } = await fetchGame(gameId);
+                                if (gData) state.game = gData;
+                                updateGameUI();
+                            }
+                        }
+                    )
+                    .subscribe((status, err) => {
+                        if (status === 'SUBSCRIBED') {
+                            setConnectionStatus(true, 'connected');
+                        } else if (status === 'CHANNEL_ERROR') {
+                            setConnectionStatus(false, 'reconnecting…');
+                            console.warn('subscription error:', err);
+                        }
+                    });
+
+                state.subscription = channel;
+            }
+
+            // ---------- join flow ----------
+            async function handleJoin(createNew) {
+                const gameId = joinGameId.value.trim().toUpperCase() || 'GAME' + String(Math.random().toString(36).slice(2, 6)
+                    .toUpperCase());
+                const playerName = joinPlayerName.value.trim() || 'Player' + String(Math.random().toString(36).slice(2, 5)
+                    .toUpperCase());
+
+                if (!gameId || gameId.length < 2) {
+                    showToast(joinMessage, 'Please enter a game ID (at least 2 characters).', 'error');
+                    return;
+                }
+                if (!playerName || playerName.length < 1) {
+                    showToast(joinMessage, 'Please enter your name.', 'error');
+                    return;
+                }
+
+                showToast(joinMessage, 'Connecting…', '');
+                btnJoin.disabled = true;
+                btnCreate.disabled = true;
+
+                try {
+                    let result;
+                    if (createNew) {
+                        // check if game exists
+                        const { data: existing } = await fetchGame(gameId);
+                        if (existing && existing.id) {
+                            showToast(joinMessage, 'Game already exists. Try joining instead.', 'error');
+                            btnJoin.disabled = false;
+                            btnCreate.disabled = false;
+                            return;
+                        }
+                        result = await createGame(gameId, playerName);
+                        if (result.error) {
+                            showToast(joinMessage, 'Create failed: ' + result.error.message, 'error');
+                            btnJoin.disabled = false;
+                            btnCreate.disabled = false;
+                            return;
+                        }
+                        result.playerId = 'player1';
+                    } else {
+                        result = await joinGame(gameId, playerName);
+                        if (result.error) {
+                            showToast(joinMessage, result.error, 'error');
+                            btnJoin.disabled = false;
+                            btnCreate.disabled = false;
+                            return;
+                        }
+                    }
+
+                    // success
+                    state.gameId = gameId;
+                    state.playerId = result.playerId;
+                    state.playerName = playerName;
+                    state.game = result.data;
+                    state.guesses = [];
+
+                    // fetch guesses
+                    const { data: guesses } = await fetchGuesses(gameId);
+                    state.guesses = guesses || [];
+
+                    // setup realtime
+                    setupSubscription(gameId);
+
+                    // check if both ready → start game
+                    if (state.game.status === 'waiting' || state.game.status === 'ready') {
+                        await tryStartGame(gameId);
+                    }
+
+                    // show appropriate screen
+                    if (state.game.status === 'playing' || state.game.status === 'finished') {
+                        showScreen(screenGame);
+                        updateGameUI();
+                    } else {
+                        showScreen(screenLobby);
+                        updateLobbyUI();
+                    }
+
+                    showToast(joinMessage, '', '');
+                    btnJoin.disabled = false;
+                    btnCreate.disabled = false;
+
+                } catch (err) {
+                    console.error(err);
+                    showToast(joinMessage, 'Error: ' + (err.message || 'unknown'), 'error');
+                    btnJoin.disabled = false;
+                    btnCreate.disabled = false;
+                }
+            }
+
+            // ---------- lobby: submit word ----------
+            async function handleSetWord() {
+                const word = getWordFromInput(lobbyWordInput);
+                if (!isValidWord(word)) {
+                    showToast(lobbyWordMessage, 'Enter exactly 4 letters (A‑Z).', 'error');
+                    return;
+                }
+                if (!state.gameId || !state.playerId) {
+                    showToast(lobbyWordMessage, 'Not in a game.', 'error');
+                    return;
+                }
+
+                showToast(lobbyWordMessage, 'Setting word…', '');
+                lobbySubmitWord.disabled = true;
+
+                try {
+                    const result = await setWord(state.gameId, state.playerId, word);
+                    if (result.error) {
+                        showToast(lobbyWordMessage, 'Error: ' + result.error.message, 'error');
+                        lobbySubmitWord.disabled = false;
+                        return;
+                    }
+                    state.game = result.data;
+                    state.myWordSet = true;
+                    showToast(lobbyWordMessage, '✅ Word set!', 'success');
+                    lobbySubmitWord.disabled = false;
+                    lobbyWordInput.value = '';
+                    updateLobbyUI();
+
+                    // check if both ready → start game
+                    await tryStartGame(state.gameId);
+
+                    // if game started, switch to game screen
+                    if (state.game.status === 'playing' || state.game.status === 'finished') {
+                        showScreen(screenGame);
+                        updateGameUI();
+                    }
+
+                } catch (err) {
+                    showToast(lobbyWordMessage, 'Error: ' + (err.message || 'unknown'), 'error');
+                    lobbySubmitWord.disabled = false;
+                }
+            }
+
+            // ---------- game: submit guess ----------
+            async function handleGuess() {
+                const word = getWordFromInput(gameGuessInput);
+                if (!isValidWord(word)) {
+                    showToast(gameGuessMessage, 'Enter exactly 4 letters (A‑Z).', 'error');
+                    return;
+                }
+                if (!state.gameId || !state.playerId) {
+                    showToast(gameGuessMessage, 'Not in a game.', 'error');
+                    return;
+                }
+                if (state.gameOver) {
+                    showToast(gameGuessMessage, 'Game is over.', 'error');
+                    return;
+                }
+                if (state.game.status !== 'playing') {
+                    showToast(gameGuessMessage, 'Game not in progress.', 'error');
+                    return;
+                }
+                if (state.game.current_turn !== state.playerId) {
+                    showToast(gameGuessMessage, 'Not your turn!', 'error');
+                    return;
+                }
+
+                showToast(gameGuessMessage, 'Submitting…', '');
+                btnSubmitGuess.disabled = true;
+                gameGuessInput.disabled = true;
+
+                try {
+                    const result = await submitGuess(state.gameId, state.playerId, word);
+                    if (result.error) {
+                        showToast(gameGuessMessage, 'Error: ' + result.error.message, 'error');
+                        btnSubmitGuess.disabled = false;
+                        gameGuessInput.disabled = false;
+                        return;
+                    }
+                    // success
+                    showToast(gameGuessMessage, '✅ Guess submitted!', 'success');
+                    gameGuessInput.value = '';
+                    btnSubmitGuess.disabled = false;
+                    gameGuessInput.disabled = false;
+
+                    // refresh data
+                    const { data: gData } = await fetchGame(state.gameId);
+                    if (gData) state.game = gData;
+                    const { data: guesses } = await fetchGuesses(state.gameId);
+                    if (guesses) state.guesses = guesses;
+                    updateGameUI();
+
+                    // check if game is over
+                    if (state.game.status === 'finished') {
+                        showToast(gameGuessMessage, '🏁 Game over!', 'success');
+                    }
+
+                } catch (err) {
+                    showToast(gameGuessMessage, 'Error: ' + (err.message || 'unknown'), 'error');
+                    btnSubmitGuess.disabled = false;
+                    gameGuessInput.disabled = false;
+                }
+            }
+
+            // ---------- enter key handlers ----------
+            function setupEnterKeys() {
+                joinGameId.addEventListener('keydown', (e) => { if (e.key === 'Enter') btnJoin.click(); });
+                joinPlayerName.addEventListener('keydown', (e) => { if (e.key === 'Enter') btnJoin.click(); });
+                lobbyWordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') lobbySubmitWord.click(); });
+                gameGuessInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') btnSubmitGuess.click(); });
+            }
+
+            // ---------- init ----------
+            function init() {
+                // connection
+                setConnectionStatus(true, 'ready');
+
+                // buttons
+                btnJoin.addEventListener('click', () => handleJoin(false));
+                btnCreate.addEventListener('click', () => handleJoin(true));
+                lobbySubmitWord.addEventListener('click', handleSetWord);
+                btnSubmitGuess.addEventListener('click', handleGuess);
+                btnLeaveGame.addEventListener('click', () => {
+                    if (confirm('Leave the game?')) leaveGame();
+                });
+
+                setupEnterKeys();
+
+                // auto-focus
+                joinGameId.focus();
+
+                // check URL params ?game=XXX
+                const params = new URLSearchParams(window.location.search);
+                const gameParam = params.get('game');
+                if (gameParam) {
+                    joinGameId.value = gameParam.toUpperCase();
+                    joinPlayerName.focus();
+                }
+
+                // show join screen
+                showScreen(screenJoin);
+            }
+
+            // ---------- start ----------
+            document.addEventListener('DOMContentLoaded', init);
+            // if DOM already loaded
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+        })();
+    </script>
+
+</body>
+</html>
