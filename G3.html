@@ -647,24 +647,25 @@
 
         <!-- ============ SCREEN: join ============ -->
         <div id="screenJoin">
-            <!-- tabs -->
+            <!-- three tabs -->
             <div class="tab-bar" style="margin-top:16px;">
-                <div class="tab active" data-tab="tabNew">➕ New Game</div>
+                <div class="tab active" data-tab="tabCreate">➕ Create</div>
+                <div class="tab" data-tab="tabJoin">🔗 Join</div>
                 <div class="tab" data-tab="tabContinue">↩️ Continue</div>
             </div>
 
-            <!-- Tab: New Game -->
-            <div id="tabNew" class="tab-content active">
+            <!-- Tab: Create New -->
+            <div id="tabCreate" class="tab-content active">
                 <div class="panel" style="margin-top:0;">
                     <div class="panel-title">🎯 Create a new game</div>
                     <div class="input-group">
-                        <input id="newUsername" type="text" placeholder="Username (lowercase)" value="" maxlength="20" style="flex:1;min-width:100px;" />
-                        <input id="newGameId" type="text" placeholder="Game ID (auto)" value="" style="flex:1;min-width:100px;" readonly />
+                        <input id="createUsername" type="text" placeholder="Username (lowercase)" value="" maxlength="20" style="flex:1;min-width:100px;" />
+                        <input id="createGameId" type="text" placeholder="Game ID (auto)" value="" style="flex:1;min-width:100px;" readonly />
                     </div>
                     <div style="margin-top:10px;">
                         <button id="btnCreateNew" class="primary" style="width:100%;">Create Game</button>
                     </div>
-                    <div id="newMessage" class="toast hidden" style="margin-top:12px;"></div>
+                    <div id="createMessage" class="toast hidden" style="margin-top:12px;"></div>
                     <!-- QR panel (shown after creation) -->
                     <div id="creationInfo" class="hidden" style="margin-top:16px;border-top:1px solid #2a3342;padding-top:16px;">
                         <div class="panel-title" style="margin-bottom:4px;">📲 Share this game</div>
@@ -679,7 +680,7 @@
                     <div class="guide" style="margin-top:16px;">
                         <h4>📖 How to play</h4>
                         <ol>
-                            <li><strong>Create</strong> a new game (you get a UUID) or <strong>continue</strong> with an existing session.</li>
+                            <li><strong>Create</strong> a new game (you get a UUID) or <strong>join</strong> an existing one.</li>
                             <li><strong>Set</strong> your secret 4‑letter word. Keep it hidden!</li>
                             <li>Wait for both players to set words – the game starts automatically.</li>
                             <li>On your turn, <strong>guess</strong> the opponent's word (4 letters).</li>
@@ -690,21 +691,35 @@
                 </div>
             </div>
 
+            <!-- Tab: Join -->
+            <div id="tabJoin" class="tab-content">
+                <div class="panel" style="margin-top:0;">
+                    <div class="panel-title">🔗 Join an existing game</div>
+                    <div class="input-group">
+                        <input id="joinUsername" type="text" placeholder="Your username" value="" maxlength="20" style="flex:1;min-width:100px;" />
+                        <input id="joinGameId" type="text" placeholder="Game ID (UUID)" value="" style="flex:1;min-width:100px;" />
+                    </div>
+                    <div style="margin-top:10px;">
+                        <button id="btnJoin" class="primary" style="width:100%;">Join Game</button>
+                    </div>
+                    <div id="joinMessage" class="toast hidden" style="margin-top:12px;"></div>
+                </div>
+            </div>
+
             <!-- Tab: Continue -->
             <div id="tabContinue" class="tab-content">
                 <div class="panel" style="margin-top:0;">
-                    <div class="panel-title">↩️ Continue an existing session</div>
+                    <div class="panel-title">↩️ Continue your session</div>
                     <div class="input-group">
-                        <input id="continueUsername" type="text" placeholder="Username (lowercase)" value="" maxlength="20" style="flex:1;min-width:100px;" />
-                        <input id="continueSessionId" type="text" placeholder="Session ID (UUID)" value="" style="flex:1;min-width:100px;" />
-                    </div>
-                    <div class="input-group" style="margin-top:8px;">
-                        <input id="continueGameId" type="text" placeholder="(Optional) New Game ID to join" value="" style="flex:1;min-width:100px;" />
+                        <input id="continueUsername" type="text" placeholder="Your username" value="" maxlength="20" style="flex:1;min-width:100px;" />
                     </div>
                     <div style="margin-top:10px;">
-                        <button id="btnContinue" class="primary" style="width:100%;">Restore / Join</button>
+                        <button id="btnContinue" class="primary" style="width:100%;">Continue</button>
                     </div>
                     <div id="continueMessage" class="toast hidden" style="margin-top:12px;"></div>
+                    <div style="margin-top:8px;font-size:13px;color:#5a6a88;text-align:center;">
+                        We'll find your last game automatically.
+                    </div>
                 </div>
             </div>
         </div>
@@ -838,25 +853,29 @@
             const screenGame = $('screenGame');
 
             // Tabs
-            const tabNew = $('tabNew');
+            const tabCreate = $('tabCreate');
+            const tabJoin = $('tabJoin');
             const tabContinue = $('tabContinue');
-            const tabBar = document.querySelector('.tab-bar');
-            const tabs = tabBar.querySelectorAll('.tab');
+            const tabs = document.querySelectorAll('.tab');
 
-            // New Game tab
-            const newUsername = $('newUsername');
-            const newGameId = $('newGameId');
+            // Create tab
+            const createUsername = $('createUsername');
+            const createGameId = $('createGameId');
             const btnCreateNew = $('btnCreateNew');
-            const newMessage = $('newMessage');
+            const createMessage = $('createMessage');
             const creationInfo = $('creationInfo');
             const qrImage = $('qrImage');
             const createdUuidDisplay = $('createdUuidDisplay');
             const copyUuidBtn = $('copyUuidBtn');
 
+            // Join tab
+            const joinUsername = $('joinUsername');
+            const joinGameId = $('joinGameId');
+            const btnJoin = $('btnJoin');
+            const joinMessage = $('joinMessage');
+
             // Continue tab
             const continueUsername = $('continueUsername');
-            const continueSessionId = $('continueSessionId');
-            const continueGameId = $('continueGameId');
             const btnContinue = $('btnContinue');
             const continueMessage = $('continueMessage');
 
@@ -907,7 +926,7 @@
             /* --- state --- */
             let state = {
                 gameId: null,
-                playerId: null, // 'player1' or 'player2'
+                playerId: null,
                 playerName: null,
                 game: null,
                 guesses: [],
@@ -915,7 +934,7 @@
                 myWordSet: false,
                 isMyTurn: false,
                 gameOver: false,
-                sessionId: null, // UUID from sessions table
+                sessionId: null,
                 sessionUsername: null,
             };
 
@@ -949,7 +968,6 @@
 
             function getPlayerLabel(playerId) {
                 if (!state.game) return '—';
-                // playerId is 'player1' or 'player2' (role string)
                 if (playerId === 'player1') return state.game.player1_id || 'P1';
                 if (playerId === 'player2') return state.game.player2_id || 'P2';
                 return '—';
@@ -1003,7 +1021,6 @@
                 const game = state.game;
                 const isFinished = game && game.status === 'finished';
 
-                // Determine secret words for underlining (only if finished)
                 let secretP1 = null,
                     secretP2 = null;
                 if (isFinished && game) {
@@ -1011,7 +1028,6 @@
                     secretP2 = game.player2_word;
                 }
 
-                // Group guesses by player
                 const p1Guesses = guesses.filter(g => g.player_id === 'player1');
                 const p2Guesses = guesses.filter(g => g.player_id === 'player2');
 
@@ -1021,7 +1037,6 @@
                     const isCorrect = fb === '4';
                     const timeStr = guess.created_at ? new Date(guess.created_at).toLocaleTimeString([], { hour: '2-digit',
                             minute: '2-digit' }) : '';
-                    // Build word with underlines if secretWord available
                     let wordHtml = '';
                     if (secretWord && secretWord.length === 4) {
                         const guessWord = guess.guess_word || '????';
@@ -1035,7 +1050,6 @@
                     } else {
                         wordHtml = guess.guess_word || '????';
                     }
-
                     return `
                         <div class="guess-item ${isMe ? 'me' : 'opponent'}">
                             <span class="word">${wordHtml}</span>
@@ -1068,7 +1082,6 @@
                         <div class="guess-list">${p2Html}</div>
                     </div>
                 `;
-                // Auto-scroll to bottom of each list
                 const lists = container.querySelectorAll('.guess-list');
                 lists.forEach(list => list.scrollTop = list.scrollHeight);
             }
@@ -1114,7 +1127,6 @@
                 gameTurnBadge.textContent = badgeText;
                 gameTurnBadge.className = `status-badge ${badgeClass}`;
 
-                // turn hint
                 if (isFinished) {
                     gameTurnHint.textContent = 'Game over.';
                 } else if (isPlaying) {
@@ -1138,7 +1150,6 @@
                     gameGuessInput.placeholder = 'Game over';
                 }
 
-                // word reveal
                 if (isFinished) {
                     gameWordReveal.classList.remove('hidden');
                     const p1Word = game.player1_word || '????';
@@ -1173,7 +1184,6 @@
                 state.myWordSet = !!myWord && myWord.length === 4;
                 state.gameOver = isFinished;
 
-                // Surrender button enabled only when playing
                 btnSurrender.disabled = !isPlaying;
             }
 
@@ -1272,14 +1282,12 @@
                 if (game.status === 'finished') return { error: 'Game already finished.' };
                 if (game.status === 'playing') return { error: 'Game already in progress.' };
 
-                // Re-join logic: if name matches a player, return that role
                 if (game.player1_id && game.player1_id.toLowerCase() === playerName.toLowerCase()) {
                     return { data: game, playerId: 'player1' };
                 }
                 if (game.player2_id && game.player2_id.toLowerCase() === playerName.toLowerCase()) {
                     return { data: game, playerId: 'player2' };
                 }
-                // If player2 slot is free, assign
                 if (!game.player2_id) {
                     const { data: updated, error: updateErr } = await supabase
                         .from('games')
@@ -1340,7 +1348,6 @@
                     const nextTurn = playerId === 'player1' ? 'player2' : 'player1';
                     updateData = { current_turn: nextTurn };
                 }
-                // Only set status to playing if it was waiting/ready
                 if (game.status === 'waiting' || game.status === 'ready') {
                     updateData.status = 'playing';
                 }
@@ -1361,13 +1368,11 @@
                 const p1Ready = game.player1_word && game.player1_word.length === 4;
                 const p2Ready = game.player2_word && game.player2_word.length === 4;
                 if (p1Ready && p2Ready && game.player1_id && game.player2_id) {
-                    // Use .eq('status', 'waiting') to avoid race
-                    const { error: updateErr } = await supabase
+                    await supabase
                         .from('games')
                         .update({ status: 'playing', current_turn: 'player1' })
                         .eq('id', gameId)
                         .eq('status', 'waiting');
-                    if (updateErr) console.warn('start game error:', updateErr);
                 }
             }
 
@@ -1385,12 +1390,12 @@
                 return { data };
             }
 
-            async function fetchSession(sessionId) {
+            async function fetchSessionByUsername(username) {
                 const { data, error } = await supabase
                     .from('sessions')
                     .select('*')
-                    .eq('id', sessionId)
-                    .single();
+                    .eq('username', username.toLowerCase())
+                    .maybeSingle();
                 if (error) return { error };
                 return { data };
             }
@@ -1407,35 +1412,39 @@
             async function restoreSession() {
                 const sessionId = localStorage.getItem('garnet_session_id');
                 if (!sessionId) return false;
-                const { data, error } = await fetchSession(sessionId);
-                if (error || !data) {
+                // Fetch session by id
+                const { data: session, error } = await supabase
+                    .from('sessions')
+                    .select('*')
+                    .eq('id', sessionId)
+                    .maybeSingle();
+                if (error || !session) {
                     localStorage.removeItem('garnet_session_id');
                     return false;
                 }
-                state.sessionId = data.id;
-                state.sessionUsername = data.username;
-                if (data.current_game_id) {
-                    // Try to load the game
-                    const { data: game, error: gErr } = await fetchGame(data.current_game_id);
+                state.sessionId = session.id;
+                state.sessionUsername = session.username;
+
+                if (session.current_game_id) {
+                    const { data: game, error: gErr } = await fetchGame(session.current_game_id);
                     if (gErr || !game) {
-                        // Game may have been deleted; clear session's current_game_id
-                        await supabase.from('sessions').update({ current_game_id: null }).eq('id', data.id);
+                        // Game not found; clear session's current_game_id
+                        await supabase.from('sessions').update({ current_game_id: null }).eq('id', session.id);
                         return false;
                     }
-                    // Determine playerId
                     let playerId = null;
-                    if (game.player1_id && game.player1_id.toLowerCase() === data.username.toLowerCase()) {
+                    if (game.player1_id && game.player1_id.toLowerCase() === session.username.toLowerCase()) {
                         playerId = 'player1';
-                    } else if (game.player2_id && game.player2_id.toLowerCase() === data.username.toLowerCase()) {
+                    } else if (game.player2_id && game.player2_id.toLowerCase() === session.username.toLowerCase()) {
                         playerId = 'player2';
                     } else {
-                        // User is not in this game anymore; clear session's current_game_id
-                        await supabase.from('sessions').update({ current_game_id: null }).eq('id', data.id);
+                        // User not in this game anymore; clear session
+                        await supabase.from('sessions').update({ current_game_id: null }).eq('id', session.id);
                         return false;
                     }
                     state.gameId = game.id;
                     state.playerId = playerId;
-                    state.playerName = data.username;
+                    state.playerName = session.username;
                     state.game = game;
                     const { data: guesses } = await fetchGuesses(game.id);
                     state.guesses = guesses || [];
@@ -1474,17 +1483,18 @@
                 showScreen(screenJoin);
                 creationInfo.classList.add('hidden');
                 // Reset messages
-                showToast(newMessage, '', '');
+                showToast(createMessage, '', '');
+                showToast(joinMessage, '', '');
                 showToast(continueMessage, '', '');
                 showToast(lobbyWordMessage, '', '');
                 showToast(gameGuessMessage, '', '');
                 showToast(revealMyWordToast, '', '');
                 // Reset inputs
-                newGameId.value = '';
-                newUsername.value = '';
+                createGameId.value = '';
+                createUsername.value = '';
+                joinUsername.value = '';
+                joinGameId.value = '';
                 continueUsername.value = '';
-                continueSessionId.value = '';
-                continueGameId.value = '';
                 lobbyWordInput.value = '';
                 gameGuessInput.value = '';
                 setConnectionStatus(true, 'ready');
@@ -1544,14 +1554,14 @@
                 state.subscription = channel;
             }
 
-            /* --- handle create new game (from New Game tab) --- */
+            /* --- handle create new (Create tab) --- */
             async function handleCreateNew() {
-                let username = newUsername.value.trim().toLowerCase();
+                let username = createUsername.value.trim().toLowerCase();
                 if (!username) {
-                    showToast(newMessage, 'Please enter a username.', 'error');
+                    showToast(createMessage, 'Please enter a username.', 'error');
                     return;
                 }
-                let gameId = newGameId.value.trim();
+                let gameId = createGameId.value.trim();
                 if (!gameId) {
                     gameId = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
                         /[xy]/g, function(c) {
@@ -1559,39 +1569,38 @@
                                 v = c == 'x' ? r : (r & 0x3 | 0x8);
                             return v.toString(16);
                         });
-                    newGameId.value = gameId;
+                    createGameId.value = gameId;
                 }
-                showToast(newMessage, 'Creating game…', '');
+                showToast(createMessage, 'Creating game…', '');
                 btnCreateNew.disabled = true;
-            
+
                 try {
-                    // 1. Check if game already exists
                     const { data: existing } = await fetchGame(gameId);
                     if (existing && existing.id) {
-                        showToast(newMessage, 'Game already exists. Use Continue tab to join.', 'error');
+                        showToast(createMessage, 'Game already exists. Use Join or Continue.', 'error');
                         btnCreateNew.disabled = false;
                         return;
                     }
-            
-                    // 2. Create the game FIRST
+
+                    // Create game first
                     const result = await createGame(gameId, username);
                     if (result.error) {
-                        showToast(newMessage, 'Create failed: ' + result.error.message, 'error');
+                        showToast(createMessage, 'Create failed: ' + result.error.message, 'error');
                         btnCreateNew.disabled = false;
                         return;
                     }
-            
-                    // 3. Now upsert the session with the now-existing game ID
+
+                    // Upsert session
                     const sessionResult = await upsertSession(username, gameId);
                     if (sessionResult.error) {
-                        showToast(newMessage, 'Session error: ' + sessionResult.error.message, 'error');
+                        showToast(createMessage, 'Session error: ' + sessionResult.error.message, 'error');
                         btnCreateNew.disabled = false;
                         return;
                     }
                     state.sessionId = sessionResult.data.id;
                     state.sessionUsername = username;
                     localStorage.setItem('garnet_session_id', state.sessionId);
-            
+
                     const assignedPlayerId = 'player1';
                     state.gameId = gameId;
                     state.playerId = assignedPlayerId;
@@ -1599,88 +1608,151 @@
                     state.game = result.data;
                     state.guesses = [];
                     state.myWordSet = false;
-            
+
                     setupSubscription(gameId);
-            
+
                     creationInfo.classList.remove('hidden');
-                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(gameId)}`;
+                    const qrUrl =
+                        `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(gameId)}`;
                     qrImage.src = qrUrl;
                     createdUuidDisplay.textContent = gameId;
-            
+
                     showScreen(screenLobby);
                     updateLobbyUI();
-                    showToast(newMessage, '', '');
+                    showToast(createMessage, '', '');
                     btnCreateNew.disabled = false;
                 } catch (err) {
-                    showToast(newMessage, 'Error: ' + (err.message || 'unknown'), 'error');
+                    showToast(createMessage, 'Error: ' + (err.message || 'unknown'), 'error');
                     btnCreateNew.disabled = false;
                 }
             }
 
-            /* --- handle continue (from Continue tab) --- */
-            async function handleContinue() {
-                const username = continueUsername.value.trim().toLowerCase();
-                const sessionId = continueSessionId.value.trim();
-                const gameIdOverride = continueGameId.value.trim();
-
-                if (!username || !sessionId) {
-                    showToast(continueMessage, 'Username and Session ID are required.', 'error');
+            /* --- handle join (Join tab) --- */
+            async function handleJoin() {
+                const username = joinUsername.value.trim().toLowerCase();
+                const gameId = joinGameId.value.trim();
+                if (!username || !gameId) {
+                    showToast(joinMessage, 'Username and Game ID are required.', 'error');
+                    return;
+                }
+                // Validate UUID format
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+                if (!uuidRegex.test(gameId)) {
+                    showToast(joinMessage, 'Invalid UUID format. Please enter a valid Game ID.', 'error');
                     return;
                 }
 
-                showToast(continueMessage, 'Restoring session…', '');
-                btnContinue.disabled = true;
+                showToast(joinMessage, 'Joining game…', '');
+                btnJoin.disabled = true;
 
                 try {
-                    // Fetch session
-                    const { data: session, error: sessionErr } = await fetchSession(sessionId);
-                    if (sessionErr || !session) {
-                        showToast(continueMessage, 'Session not found.', 'error');
-                        btnContinue.disabled = false;
-                        return;
-                    }
-                    if (session.username.toLowerCase() !== username) {
-                        showToast(continueMessage, 'Session not found or username mismatch.', 'error');
-                        btnContinue.disabled = false;
-                        return;
-                    }
-
-                    // If gameIdOverride provided, join that game
-                    let targetGameId = session.current_game_id;
-                    if (gameIdOverride) {
-                        targetGameId = gameIdOverride;
-                    }
-                    if (!targetGameId) {
-                        showToast(continueMessage, 'No game associated with this session, and no Game ID provided.', 'error');
-                        btnContinue.disabled = false;
-                        return;
-                    }
-
-                    // Join the game
-                    const joinResult = await joinGame(targetGameId, username);
+                    const joinResult = await joinGame(gameId, username);
                     if (joinResult.error) {
-                        showToast(continueMessage, joinResult.error, 'error');
-                        btnContinue.disabled = false;
+                        showToast(joinMessage, joinResult.error, 'error');
+                        btnJoin.disabled = false;
                         return;
                     }
 
-                    // Update session with the gameId
-                    await supabase.from('sessions').update({ current_game_id: targetGameId }).eq('id', sessionId);
-
-                    state.sessionId = sessionId;
+                    // Upsert session with this game
+                    const sessionResult = await upsertSession(username, gameId);
+                    if (sessionResult.error) {
+                        showToast(joinMessage, 'Session error: ' + sessionResult.error.message, 'error');
+                        btnJoin.disabled = false;
+                        return;
+                    }
+                    state.sessionId = sessionResult.data.id;
                     state.sessionUsername = username;
-                    localStorage.setItem('garnet_session_id', sessionId);
-                    state.gameId = targetGameId;
+                    localStorage.setItem('garnet_session_id', state.sessionId);
+
+                    state.gameId = gameId;
                     state.playerId = joinResult.playerId;
                     state.playerName = username;
                     state.game = joinResult.data;
                     state.guesses = [];
-                    const { data: guesses } = await fetchGuesses(targetGameId);
+                    const { data: guesses } = await fetchGuesses(gameId);
                     state.guesses = guesses || [];
 
-                    setupSubscription(targetGameId);
+                    setupSubscription(gameId);
 
                     if (state.game.status === 'playing' || state.game.status === 'finished') {
+                        showScreen(screenGame);
+                        updateGameUI();
+                    } else {
+                        showScreen(screenLobby);
+                        updateLobbyUI();
+                    }
+                    showToast(joinMessage, '', '');
+                    btnJoin.disabled = false;
+                } catch (err) {
+                    showToast(joinMessage, 'Error: ' + (err.message || 'unknown'), 'error');
+                    btnJoin.disabled = false;
+                }
+            }
+
+            /* --- handle continue (Continue tab) --- */
+            async function handleContinue() {
+                const username = continueUsername.value.trim().toLowerCase();
+                if (!username) {
+                    showToast(continueMessage, 'Please enter your username.', 'error');
+                    return;
+                }
+
+                showToast(continueMessage, 'Looking up your session…', '');
+                btnContinue.disabled = true;
+
+                try {
+                    // Find session by username
+                    const { data: session, error } = await fetchSessionByUsername(username);
+                    if (error || !session) {
+                        showToast(continueMessage, 'No session found for this username. Please join or create a game.', 'error');
+                        btnContinue.disabled = false;
+                        return;
+                    }
+
+                    if (!session.current_game_id) {
+                        showToast(continueMessage, 'You don\'t have an active game. Create or join one.', 'error');
+                        btnContinue.disabled = false;
+                        return;
+                    }
+
+                    // Restore game
+                    const { data: game, error: gErr } = await fetchGame(session.current_game_id);
+                    if (gErr || !game) {
+                        // Game missing; clear session
+                        await supabase.from('sessions').update({ current_game_id: null }).eq('id', session.id);
+                        showToast(continueMessage, 'Your previous game no longer exists. Please create or join a new one.', 'error');
+                        btnContinue.disabled = false;
+                        return;
+                    }
+
+                    let playerId = null;
+                    if (game.player1_id && game.player1_id.toLowerCase() === username) {
+                        playerId = 'player1';
+                    } else if (game.player2_id && game.player2_id.toLowerCase() === username) {
+                        playerId = 'player2';
+                    } else {
+                        // User not in this game anymore; clear session
+                        await supabase.from('sessions').update({ current_game_id: null }).eq('id', session.id);
+                        showToast(continueMessage, 'You are no longer a player in that game. Please join or create a new one.',
+                            'error');
+                        btnContinue.disabled = false;
+                        return;
+                    }
+
+                    state.sessionId = session.id;
+                    state.sessionUsername = username;
+                    localStorage.setItem('garnet_session_id', session.id);
+
+                    state.gameId = game.id;
+                    state.playerId = playerId;
+                    state.playerName = username;
+                    state.game = game;
+                    const { data: guesses } = await fetchGuesses(game.id);
+                    state.guesses = guesses || [];
+
+                    setupSubscription(game.id);
+
+                    if (game.status === 'playing' || game.status === 'finished') {
                         showScreen(screenGame);
                         updateGameUI();
                     } else {
@@ -1779,7 +1851,6 @@
                     btnSubmitGuess.disabled = false;
                     gameGuessInput.disabled = false;
 
-                    // Re-fetch game and guesses sequentially
                     const { data: gData } = await fetchGame(state.gameId);
                     if (gData) state.game = gData;
                     const { data: guesses } = await fetchGuesses(state.gameId);
@@ -1788,7 +1859,6 @@
 
                     if (state.game.status === 'finished') {
                         showToast(gameGuessMessage, '🏁 Game over!', 'success');
-                        // Also update session (already done)
                     }
                 } catch (err) {
                     showToast(gameGuessMessage, 'Error: ' + (err.message || 'unknown'), 'error');
@@ -1814,7 +1884,6 @@
                     if (winner === 'draw') {
                         updateData.winner = 'draw';
                     } else {
-                        // opponent wins
                         const opponent = state.playerId === 'player1' ? 'player2' : 'player1';
                         updateData.winner = opponent;
                     }
@@ -1826,7 +1895,6 @@
                         console.warn('Surrender update error:', error);
                         showToast(gameGuessMessage, 'Failed to end game.', 'error');
                     }
-                    // Re-fetch and update
                     const { data: gData } = await fetchGame(state.gameId);
                     if (gData) state.game = gData;
                     const { data: guesses } = await fetchGuesses(state.gameId);
@@ -1845,7 +1913,6 @@
                 const p2Name = oldGame.player2_id;
                 if (!p1Name || !p2Name) return;
 
-                // Create a new game with same players
                 const newGameId = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
                     /[xy]/g, function(c) {
                         var r = Math.random() * 16 | 0,
@@ -1868,19 +1935,14 @@
                         .select()
                         .single();
                     if (error) { throw error; }
-                    // Update sessions for both players (if we have their session ids)
-                    // We only know our own session; opponent's session will be updated when they reconnect.
-                    // Update our session
                     if (state.sessionId) {
                         await supabase.from('sessions').update({ current_game_id: newGameId }).eq('id', state.sessionId);
                     }
-                    // Switch state to new game
                     state.gameId = newGameId;
                     state.game = newGame;
                     state.guesses = [];
                     state.myWordSet = false;
                     state.gameOver = false;
-                    // Re-subscribe
                     setupSubscription(newGameId);
                     showScreen(screenLobby);
                     updateLobbyUI();
@@ -1943,76 +2005,67 @@
 
             /* --- event listeners & init --- */
             function setupEventListeners() {
-                // Tabs
                 tabs.forEach(tab => {
                     tab.addEventListener('click', () => switchTab(tab.dataset.tab));
                 });
 
-                // New Game
                 btnCreateNew.addEventListener('click', handleCreateNew);
                 copyUuidBtn.addEventListener('click', copyUuid);
-
-                // Continue
+                btnJoin.addEventListener('click', handleJoin);
                 btnContinue.addEventListener('click', handleContinue);
 
-                // Lobby
                 lobbySubmitWord.addEventListener('click', handleSetWord);
 
-                // Game
                 btnSubmitGuess.addEventListener('click', handleGuess);
                 btnSurrender.addEventListener('click', showSurrenderModal);
                 btnLeaveGame.addEventListener('click', () => {
                     if (confirm('Leave the game? Your session will be preserved.')) {
                         leaveGame(false);
-                        // Switch to Continue tab and fill session ID
                         switchTab('tabContinue');
-                        if (state.sessionId) {
-                            continueSessionId.value = state.sessionId;
-                            continueUsername.value = state.sessionUsername || '';
+                        if (state.sessionUsername) {
+                            continueUsername.value = state.sessionUsername;
                         }
                     }
                 });
                 btnRevealMyWord.addEventListener('click', handleRevealMyWord);
                 btnPlayAgain.addEventListener('click', handlePlayAgain);
 
-                // Modal
                 modalCancel.addEventListener('click', () => surrenderModal.classList.add('hidden'));
                 modalSurrender.addEventListener('click', () => handleSurrenderAction('opponent'));
                 modalDraw.addEventListener('click', () => handleSurrenderAction('draw'));
-                // Click outside to close
                 surrenderModal.addEventListener('click', (e) => {
                     if (e.target === surrenderModal) surrenderModal.classList.add('hidden');
                 });
 
-                // Enter key shortcuts (with guard)
+                // Enter key shortcuts with guard
                 const enterGuard = (e, btn) => {
                     if (e.key === 'Enter' && !btn.disabled) btn.click();
                 };
-                newUsername.addEventListener('keydown', (e) => enterGuard(e, btnCreateNew));
-                newGameId.addEventListener('keydown', (e) => enterGuard(e, btnCreateNew));
+                createUsername.addEventListener('keydown', (e) => enterGuard(e, btnCreateNew));
+                createGameId.addEventListener('keydown', (e) => enterGuard(e, btnCreateNew));
+                joinUsername.addEventListener('keydown', (e) => enterGuard(e, btnJoin));
+                joinGameId.addEventListener('keydown', (e) => enterGuard(e, btnJoin));
                 continueUsername.addEventListener('keydown', (e) => enterGuard(e, btnContinue));
-                continueSessionId.addEventListener('keydown', (e) => enterGuard(e, btnContinue));
-                continueGameId.addEventListener('keydown', (e) => enterGuard(e, btnContinue));
                 lobbyWordInput.addEventListener('keydown', (e) => enterGuard(e, lobbySubmitWord));
                 gameGuessInput.addEventListener('keydown', (e) => enterGuard(e, btnSubmitGuess));
 
                 // Force lowercase on username fields
-                [newUsername, continueUsername].forEach(el => {
+                [createUsername, joinUsername, continueUsername].forEach(el => {
                     el.addEventListener('input', () => {
                         el.value = el.value.toLowerCase();
                     });
                 });
 
-                // Auto-generate UUID for new game if empty
-                newGameId.addEventListener('focus', () => {
-                    if (!newGameId.value.trim()) {
+                // Auto-generate UUID for create tab
+                createGameId.addEventListener('focus', () => {
+                    if (!createGameId.value.trim()) {
                         const id = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
                             .replace(/[xy]/g, function(c) {
                                 var r = Math.random() * 16 | 0,
                                     v = c == 'x' ? r : (r & 0x3 | 0x8);
                                 return v.toString(16);
                             });
-                        newGameId.value = id;
+                        createGameId.value = id;
                     }
                 });
             }
@@ -2021,14 +2074,12 @@
             async function init() {
                 setConnectionStatus(true, 'ready');
 
-                // Try to restore session
                 const restored = await restoreSession();
                 if (restored) {
-                    // Already handled in restoreSession
+                    // Already handled
                 } else {
                     showScreen(screenJoin);
-                    switchTab('tabNew');
-                    // If we have a session ID in localStorage but couldn't restore, clear it
+                    switchTab('tabCreate');
                     if (localStorage.getItem('garnet_session_id')) {
                         localStorage.removeItem('garnet_session_id');
                     }
@@ -2037,9 +2088,7 @@
                 setupEventListeners();
             }
 
-            // Call init exactly once
             document.addEventListener('DOMContentLoaded', init);
-            // No duplicate call
         })();
     </script>
 
