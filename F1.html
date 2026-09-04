@@ -102,12 +102,13 @@
             color: #4a5a78;
         }
 
-        /* ----- 3‑letter word boxes ----- */
+        /* ----- 3‑letter word boxes (RTL-friendly) ----- */
         .letter-boxes {
             display: flex;
+            flex-direction: row-reverse; /* DOM order 0,1,2 → visual order 2,1,0 (RTL) */
             gap: 10px;
             justify-content: center;
-            direction: ltr; /* keep left‑to‑right for typing order, but text is Persian */
+            direction: ltr; /* keep LTR for the container so DOM order matches focus order */
         }
         .letter-boxes input {
             width: 60px;
@@ -394,15 +395,18 @@
             font-family: 'Vazir', 'Courier New', monospace;
             font-weight: 700;
             font-size: 22px;
-            letter-spacing: 2px;
             background: #1c232f;
             padding: 0 8px;
             border-radius: 4px;
             color: #e8edf5;
-            display: flex;
-            gap: 2px;
+            display: inline-block;
+            letter-spacing: normal;
+            line-height: 1.4;
         }
-        .guess-item .word .matched {
+        .guess-item .word .letter {
+            display: inline;
+        }
+        .guess-item .word .letter.matched {
             text-decoration: underline;
             text-decoration-color: #d4e07a;
             text-underline-offset: 3px;
@@ -464,10 +468,10 @@
             font-family: 'Vazir', 'Courier New', monospace;
             font-size: 30px;
             font-weight: 700;
-            letter-spacing: 4px;
+            letter-spacing: normal;
             color: #d4e07a;
             display: flex;
-            gap: 4px;
+            gap: 2px;
             justify-content: center;
         }
 
@@ -714,7 +718,7 @@
             border-left: none;
         }
         .letter-boxes {
-            direction: ltr;
+            direction: ltr; /* keep LTR so DOM order (0,1,2) maps to focus order */
         }
     </style>
 </head>
@@ -1092,7 +1096,7 @@
                 return String(matches);
             }
 
-            /* --- render guess history (two columns) --- */
+            /* --- render guess history (two columns) with connected Persian words --- */
             function renderGuesses() {
                 const container = guessContainer;
                 const guesses = state.guesses || [];
@@ -1109,17 +1113,14 @@
                         guess.guess_word === secretWord;
                     const timeStr = guess.created_at ? new Date(guess.created_at).toLocaleTimeString([], { hour: '2-digit',
                             minute: '2-digit' }) : '';
+                    // Build connected word with per-letter styling
+                    const wordChars = guess.guess_word ? guess.guess_word.split('') : ['?', '?', '?'];
+                    const secretChars = secretWord ? secretWord.split('') : [];
                     let wordHtml = '';
-                    if (secretWord && secretWord.length === 3) {
-                        const gArr = guess.guess_word ? guess.guess_word.split('') : ['?', '?', '?'];
-                        const sArr = secretWord.split('');
-                        for (let i = 0; i < 3; i++) {
-                            const char = gArr[i] || '?';
-                            const matched = sArr.includes(char);
-                            wordHtml += `<span class="${matched ? 'matched' : ''}">${char}</span>`;
-                        }
-                    } else {
-                        wordHtml = guess.guess_word || '???';
+                    for (let i = 0; i < 3; i++) {
+                        const char = wordChars[i] || '?';
+                        const matched = secretChars.length === 3 && secretChars.includes(char);
+                        wordHtml += `<span class="letter ${matched ? 'matched' : ''}">${char}</span>`;
                     }
                     return `
                         <div class="guess-item ${isMe ? 'me' : 'opponent'}">
@@ -1399,6 +1400,11 @@
                 btnSurrender.disabled = !isPlaying;
 
                 updateTimers();
+
+                // Focus on first box if it's the player's turn
+                if (canGuess) {
+                    setTimeout(() => guessBoxes[0].focus(), 100);
+                }
             }
 
             function updateLobbyUI() {
@@ -1447,6 +1453,11 @@
                 if (status === 'playing' || status === 'finished') {
                     showScreen(screenGame);
                     refreshGameData();
+                }
+
+                // Focus on first box if not word set yet
+                if (!wordSet && state.playerId) {
+                    setTimeout(() => lobbyWordBoxes[0].focus(), 100);
                 }
             }
 
@@ -1826,56 +1837,62 @@
                 }
             }
 
-            /* --- letter box input handling --- */
+            /* --- letter box input handling (RTL-aware) --- */
             function setupLetterBoxes(boxes, onComplete) {
                 boxes.forEach((box, index) => {
                     // Filter input: only Persian letters
                     box.addEventListener('input', function(e) {
                         const val = this.value;
-                        // Keep only Persian letters (U+0600-U+06FF)
                         const filtered = val.replace(/[^\u0600-\u06FF]/g, '');
                         this.value = filtered.slice(0, 1);
                         if (this.value.length === 1) {
-                            // Move to next box
+                            // Move to the next box (visually left, which is index+1)
+                            // Because of flex-direction: row-reverse, index 0 is rightmost,
+                            // index 1 is middle, index 2 is leftmost.
+                            // So after typing in box 0, go to box 1; after box 1, go to box 2.
                             if (index < boxes.length - 1) {
                                 boxes[index + 1].focus();
                             } else {
-                                // Last box: trigger onComplete
+                                // Last box (leftmost) – trigger complete
                                 if (onComplete) onComplete();
                             }
                         }
                     });
 
-                    // Handle backspace: move to previous box if empty
+                    // Handle backspace: move to the previous box (visually right)
                     box.addEventListener('keydown', function(e) {
                         if (e.key === 'Backspace' && this.value === '' && index > 0) {
                             boxes[index - 1].focus();
                         }
-                        // Allow left/right arrow keys to navigate
-                        if (e.key === 'ArrowLeft' && index > 0) {
-                            boxes[index - 1].focus();
-                            e.preventDefault();
-                        }
-                        if (e.key === 'ArrowRight' && index < boxes.length - 1) {
+                        // Arrow navigation (natural for RTL: left arrow goes to next box visually)
+                        // But with flex-direction: row-reverse, the visual order is reversed.
+                        // We want the user to navigate naturally: left arrow moves to the left box,
+                        // right arrow moves to the right box.
+                        // In RTL, the leftmost box is the last index, the rightmost is index 0.
+                        // So: left arrow → index+1, right arrow → index-1
+                        if (e.key === 'ArrowLeft' && index < boxes.length - 1) {
                             boxes[index + 1].focus();
                             e.preventDefault();
                         }
+                        if (e.key === 'ArrowRight' && index > 0) {
+                            boxes[index - 1].focus();
+                            e.preventDefault();
+                        }
                     });
-
-                    // Clear on focus if there's a value? Not needed.
                 });
             }
 
             // Setup for lobby word boxes
             setupLetterBoxes(lobbyWordBoxes, function() {
-                // Auto-submit when last letter entered? We'll let user click submit.
+                // Auto-submit when last letter entered? Let user click submit.
                 // But we can highlight the button.
+                if (!lobbySubmitWord.disabled) {
+                    lobbySubmitWord.focus();
+                }
             });
 
             // Setup for guess boxes
             setupLetterBoxes(guessBoxes, function() {
-                // Auto-submit when last letter entered?
-                // We can trigger guess if button not disabled.
                 if (!btnSubmitGuess.disabled) {
                     btnSubmitGuess.click();
                 }
@@ -1910,8 +1927,6 @@
                     lobbySubmitWord.disabled = false;
                     // Clear boxes
                     lobbyWordBoxes.forEach(box => box.value = '');
-                    // Focus first box
-                    lobbyWordBoxes[0].focus();
                     updateLobbyUI();
 
                     await tryStartGame(state.gameId);
@@ -1967,7 +1982,6 @@
                     guessBoxes.forEach(box => box.value = '');
                     btnSubmitGuess.disabled = false;
                     guessBoxes.forEach(box => box.disabled = false);
-                    guessBoxes[0].focus();
 
                     const { data: gData } = await fetchGame(state.gameId);
                     if (gData) state.game = gData;
@@ -2150,7 +2164,7 @@
                     if (e.target === surrenderModal) surrenderModal.classList.add('hidden');
                 });
 
-                // Enter key on username fields triggers appropriate button
+                // Enter key on username fields
                 const enterGuard = (e, btn) => {
                     if (e.key === 'Enter' && !btn.disabled) btn.click();
                 };
@@ -2196,8 +2210,6 @@
                 showScreen(screenJoin);
                 switchTab('tabJoin');
                 setupEventListeners();
-
-                // Set initial focus on first lobby box if needed
             }
 
             document.addEventListener('DOMContentLoaded', init);
