@@ -1,0 +1,2351 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>گارنت F4 — ۳ نفره</title>
+
+    <!-- Vazir Font -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet" />
+
+    <!-- Supabase client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
+    </script>
+
+    <style>
+        /* ---------- reset & base ---------- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Vazir', 'Segoe UI', system-ui, sans-serif;
+            background: #0b0e14;
+            color: #e8edf5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            margin: 0;
+        }
+        #app {
+            max-width: 1024px;
+            width: 100%;
+            background: #141a24;
+            border-radius: 28px;
+            padding: 28px 24px 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04);
+        }
+
+        /* ---------- typography ---------- */
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        h1 small {
+            font-weight: 400;
+            font-size: 14px;
+            color: #8896b0;
+            letter-spacing: 0;
+        }
+        .label {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #7a8aa8;
+            margin-bottom: 4px;
+        }
+
+        /* ---------- cards / panels ---------- */
+        .panel {
+            background: #1c232f;
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-top: 16px;
+            border: 1px solid #2a3342;
+        }
+        .panel-title {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 10px;
+            color: #bcc9e0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: space-between;
+        }
+
+        /* ---------- inputs & buttons ---------- */
+        input {
+            background: #0f141e;
+            border: 1px solid #2a3342;
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: #e8edf5;
+            font-size: 16px;
+            width: 100%;
+            transition: border 0.15s;
+            outline: none;
+            font-family: inherit;
+        }
+        input:focus {
+            border-color: #6b7fa0;
+        }
+        input::placeholder {
+            color: #4a5a78;
+        }
+
+        /* ----- 3‑letter word boxes (RTL-friendly) ----- */
+        .letter-boxes {
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 10px;
+            justify-content: center;
+            direction: ltr;
+        }
+        .letter-boxes input {
+            width: 60px;
+            height: 60px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            font-family: 'Vazir', 'Courier New', monospace;
+            background: #0f141e;
+            border: 2px solid #2a3342;
+            border-radius: 12px;
+            color: #e8edf5;
+            padding: 0;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .letter-boxes input:focus {
+            border-color: #6b7fa0;
+            box-shadow: 0 0 0 2px rgba(91, 123, 191, 0.3);
+        }
+        .letter-boxes input.filled {
+            border-color: #5b7bbf;
+        }
+
+        /* ---------- buttons ---------- */
+        button {
+            background: #2f3b52;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 22px;
+            font-weight: 600;
+            font-size: 15px;
+            color: #e8edf5;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.05s;
+            font-family: inherit;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+        button:hover:not(:disabled) {
+            background: #3e4d68;
+        }
+        button:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+        button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+        button.primary {
+            background: #5b7bbf;
+            color: #fff;
+        }
+        button.primary:hover:not(:disabled) {
+            background: #6f8fd4;
+        }
+        button.success {
+            background: #3b8f6a;
+            color: #fff;
+        }
+        button.success:hover:not(:disabled) {
+            background: #47a57c;
+        }
+        button.danger {
+            background: #b5554a;
+            color: #fff;
+        }
+        button.danger:hover:not(:disabled) {
+            background: #cc6a5e;
+        }
+        button.outline {
+            background: transparent;
+            border: 1px solid #3e4d68;
+        }
+        button.outline:hover:not(:disabled) {
+            background: #1c232f;
+        }
+        button.ghost {
+            background: transparent;
+            color: #8896b0;
+            padding: 4px 10px;
+            font-size: 13px;
+        }
+        button.ghost:hover:not(:disabled) {
+            background: #1c232f;
+        }
+
+        /* ---------- tabs ---------- */
+        .tab-bar {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid #2a3342;
+            margin-bottom: 16px;
+        }
+        .tab-bar .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            background: #0f141e;
+            color: #6a7a98;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            transition: background 0.1s;
+            border: 1px solid transparent;
+            border-bottom: none;
+        }
+        .tab-bar .tab.active {
+            background: #1c232f;
+            color: #e8edf5;
+            border-color: #2a3342;
+            border-bottom: 2px solid #5b7bbf;
+        }
+        .tab-bar .tab:not(.active):hover {
+            background: #1a212c;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ---------- game status ---------- */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            background: #1c232f;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            border: 1px solid #2a3342;
+        }
+        .status-bar .game-id {
+            font-weight: 600;
+            color: #bcc9e0;
+            font-size: 14px;
+            word-break: break-all;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .status-bar .game-id span {
+            background: #0f141e;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #d0def0;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #2a3342;
+            color: #b0c0d8;
+        }
+        .status-badge.playing {
+            background: #2d5a4a;
+            color: #8fd4b4;
+        }
+        .status-badge.waiting {
+            background: #5a4a2d;
+            color: #d4be8f;
+        }
+        .status-badge.finished {
+            background: #4a2d5a;
+            color: #c88fd4;
+        }
+        .status-badge.your-turn {
+            background: #2d4a6a;
+            color: #8fc4d4;
+            animation: pulse-glow 1.4s infinite alternate;
+        }
+        .status-badge.win {
+            background: #2d5a3a;
+            color: #7ad4a0;
+        }
+        .status-badge.lose {
+            background: #5a2d2d;
+            color: #d48a7a;
+        }
+        .status-badge.draw {
+            background: #3a4a5a;
+            color: #a0c0d8;
+        }
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(91, 123, 191, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 12px 4px rgba(91, 123, 191, 0.15);
+            }
+        }
+
+        /* ---------- guess history : three columns ---------- */
+        .guess-columns {
+            display: flex;
+            gap: 12px;
+        }
+        .guess-column {
+            flex: 1;
+            min-width: 0;
+        }
+        .guess-column .col-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: #7a8aa8;
+            margin-bottom: 6px;
+            text-align: center;
+            border-bottom: 1px solid #2a3342;
+            padding-bottom: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .guess-column .col-header .name-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+        .guess-column .col-header .name-row .timer-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #d4e07a;
+            background: #1e2a1e;
+            padding: 0 8px;
+            border-radius: 4px;
+            min-width: 30px;
+            text-align: center;
+        }
+        .guess-column .col-header .name-row .timer-text.warning {
+            color: #e8b0a8;
+            animation: pulse 0.8s infinite alternate;
+        }
+        .guess-column .col-header .player-status {
+            font-size: 11px;
+            color: #6a7a98;
+        }
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0.4;
+            }
+        }
+
+        /* Timer bar */
+        .timer-bar-track {
+            width: 100%;
+            height: 4px;
+            background: #2a3342;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+        .timer-bar-track .timer-bar-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.5s linear;
+        }
+        .timer-bar-track .timer-bar-fill.your-turn {
+            background: #e8553a;
+        }
+        .timer-bar-track .timer-bar-fill.opponent-turn {
+            background: #3b8f6a;
+        }
+        .timer-bar-track .timer-bar-fill.finished {
+            background: #4a5a6a;
+        }
+
+        .guess-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 340px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .guess-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .guess-list::-webkit-scrollbar-track {
+            background: #0f141e;
+            border-radius: 10px;
+        }
+        .guess-list::-webkit-scrollbar-thumb {
+            background: #2f3b52;
+            border-radius: 10px;
+        }
+        .guess-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #0f141e;
+            border-radius: 8px;
+            padding: 4px 10px;
+            border-right: 3px solid #2f3b52;
+            animation: slide-in 0.2s ease;
+            font-size: 14px;
+        }
+        .guess-item .word {
+            font-family: 'Vazir', 'Courier New', monospace;
+            font-weight: 700;
+            font-size: 20px;
+            background: #1c232f;
+            padding: 0 6px;
+            border-radius: 4px;
+            color: #e8edf5;
+            display: inline-block;
+            letter-spacing: normal;
+            line-height: 1.4;
+        }
+        .guess-item .word .letter {
+            display: inline;
+        }
+        .guess-item .word .letter.matched {
+            text-decoration: underline;
+            text-decoration-color: #d4e07a;
+            text-underline-offset: 3px;
+        }
+        .guess-item .feedback {
+            font-weight: 700;
+            font-size: 15px;
+            color: #d4e07a;
+            background: #1e2a1e;
+            padding: 0 8px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin-right: auto;
+            min-width: 24px;
+            text-align: center;
+        }
+        .guess-item .feedback.correct {
+            color: #7ad4a0;
+            background: #1a2a22;
+        }
+        .guess-item .time {
+            font-size: 10px;
+            color: #4a5a78;
+            margin-right: 4px;
+        }
+        .guess-item.me {
+            border-right-color: #5b7bbf;
+        }
+        .guess-item.opponent {
+            border-right-color: #b8943a;
+        }
+        @keyframes slide-in {
+            0% {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- word reveal ---------- */
+        .word-reveal {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 8px 0 4px;
+            flex-wrap: wrap;
+        }
+        .word-reveal .box {
+            background: #0f141e;
+            padding: 6px 18px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #2a3342;
+        }
+        .word-reveal .box .label {
+            font-size: 11px;
+            color: #6a7a98;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .word-reveal .box .value {
+            font-family: 'Vazir', 'Courier New', monospace;
+            font-size: 30px;
+            font-weight: 700;
+            letter-spacing: normal;
+            color: #d4e07a;
+            display: flex;
+            gap: 2px;
+            justify-content: center;
+        }
+        .word-reveal .box .value .secret-char {
+            display: inline;
+        }
+
+        /* ---------- QR & copy ---------- */
+        .qr-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .qr-container img {
+            background: #fff;
+            padding: 8px;
+            border-radius: 8px;
+            width: 120px;
+            height: 120px;
+        }
+        .qr-container .copy-area {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+        }
+        .qr-container .copy-area .uuid-display {
+            font-family: monospace;
+            font-size: 14px;
+            background: #0f141e;
+            padding: 6px 12px;
+            border-radius: 8px;
+            word-break: break-all;
+            max-width: 220px;
+            text-align: center;
+        }
+
+        /* ---------- guide ---------- */
+        .guide {
+            background: #0f141e;
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-top: 16px;
+            border-right: 3px solid #5b7bbf;
+            text-align: justify;
+        }
+        .guide h4 {
+            color: #bcc9e0;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        .guide ol {
+            padding-right: 20px;
+            font-size: 14px;
+            color: #8896b0;
+            line-height: 1.8;
+        }
+
+        /* ---------- utility ---------- */
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-12 {
+            margin-top: 12px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .flex {
+            display: flex;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .gap-12 {
+            gap: 12px;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-muted {
+            color: #6a7a98;
+        }
+        .text-sm {
+            font-size: 14px;
+        }
+        .w-full {
+            width: 100%;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        /* ---------- toast ---------- */
+        .toast {
+            background: #1e2a3a;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 14px;
+            color: #bcc9e0;
+            border-right: 3px solid #5b7bbf;
+            margin-top: 10px;
+        }
+        .toast.error {
+            border-right-color: #b5554a;
+            color: #e8b0a8;
+        }
+        .toast.success {
+            border-right-color: #3b8f6a;
+            color: #a8d4be;
+        }
+
+        /* ---------- spinner ---------- */
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #2a3342;
+            border-top: 2px solid #5b7bbf;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ---------- modal overlay ---------- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fade-in 0.2s;
+        }
+        .modal-overlay .modal-box {
+            background: #1c232f;
+            border-radius: 20px;
+            padding: 28px 32px;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid #2a3342;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+        .modal-overlay .modal-box h3 {
+            margin-bottom: 12px;
+            color: #e8edf5;
+        }
+        .modal-overlay .modal-box p {
+            color: #8896b0;
+            font-size: 14px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .modal-overlay .modal-box .modal-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* responsive */
+        @media (max-width: 768px) {
+            #app {
+                padding: 18px 14px 22px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+            .panel {
+                padding: 14px 14px;
+            }
+            .status-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+            .letter-boxes input {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+            .guess-columns {
+                flex-direction: column;
+            }
+            .guess-column {
+                flex: none;
+            }
+            .word-reveal .box .value {
+                font-size: 24px;
+            }
+            .qr-container {
+                flex-direction: column;
+            }
+            .tab-bar .tab {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+        }
+
+        /* RTL overrides */
+        .guess-item {
+            border-right: 3px solid #2f3b52;
+            border-left: none;
+        }
+        .guess-item.me {
+            border-right-color: #5b7bbf;
+        }
+        .guess-item.opponent {
+            border-right-color: #b8943a;
+        }
+        .toast {
+            border-right: 3px solid #5b7bbf;
+            border-left: none;
+        }
+        .guide {
+            border-right: 3px solid #5b7bbf;
+            border-left: none;
+        }
+        .letter-boxes {
+            direction: ltr;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;">
+            <h1>◆◆◆◆ گارنت <small>F4</small></h1>
+            <div id="connectionStatus" style="font-size:13px;color:#6a7a98;display:flex;align-items:center;gap:6px;">
+                <span class="spinner" id="connSpinner" style="width:14px;height:14px;border-width:2px;"></span>
+                <span id="connLabel">در حال اتصال…</span>
+            </div>
+        </div>
+
+        <!-- ============ SCREEN: join ============ -->
+        <div id="screenJoin">
+            <div class="tab-bar" style="margin-top:16px;">
+                <div class="tab active" data-tab="tabCreate">➕ ساخت بازی</div>
+                <div class="tab" data-tab="tabJoin">🔗 پیوستن</div>
+            </div>
+
+            <!-- Tab: Create -->
+            <div id="tabCreate" class="tab-content active">
+                <div class="panel" style="margin-top:0;">
+                    <div class="panel-title">🎯 ساخت بازی جدید</div>
+                    <div class="input-group">
+                        <input id="createUsername" type="text" placeholder="نام کاربری (کوچک)" value="" maxlength="20" style="flex:1;min-width:100px;" />
+                        <input id="createGameId" type="text" placeholder="شناسه بازی (خودکار)" value="" style="flex:1;min-width:100px;" readonly />
+                    </div>
+                    <div style="margin-top:10px;">
+                        <button id="btnCreateNew" class="primary" style="width:100%;">ساخت بازی</button>
+                    </div>
+                    <div id="createMessage" class="toast hidden" style="margin-top:12px;"></div>
+                    <div id="creationInfo" class="hidden" style="margin-top:16px;border-top:1px solid #2a3342;padding-top:16px;">
+                        <div class="panel-title" style="margin-bottom:4px;">📲 اشتراک‌گذاری</div>
+                        <div class="qr-container">
+                            <img id="qrImage" src="" alt="QR code" />
+                            <div class="copy-area">
+                                <div class="uuid-display" id="createdUuidDisplay">—</div>
+                                <button id="copyUuidBtn" class="outline" style="font-size:13px;padding:6px 18px;">📋 کپی شناسه</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="guide" style="margin-top:16px;">
+                        <h4>📖 راهنمای بازی</h4>
+                        <ol>
+                            <li><strong>ساخت</strong> بازی جدید یا <strong>به</strong> بازی موجود بپیوندید (حداکثر ۳ بازیکن).</li>
+                            <li>بازی یک کلمهٔ ۳ حرفی <strong>تصادفی</strong> از حدس‌های قبلی انتخاب می‌کند.</li>
+                            <li>هر بازیکن در نوبت خود یک کلمهٔ ۳ حرفی <strong>حدس</strong> می‌زند.</li>
+                            <li>عدد نشان می‌دهد <strong>چند حرف</strong> از کلمهٔ شما در کلمهٔ مخفی وجود دارد.</li>
+                            <li>هر نوبت <strong>۲۱ ثانیه</strong> وقت دارید – در غیر این صورت نوبت به بعدی می‌رسد.</li>
+                            <li>ترتیب نوبت‌ها: ۱ → ۲ → ۳ → ۱ → ۲ → ۳ → …</li>
+                            <li>کسی که <strong>کلمهٔ دقیق</strong> را حدس بزند، برنده است!</li>
+                            <li>پس از پایان، <strong>بازی دوباره</strong> شما را با همان بازیکنان به بازی جدید می‌برد.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Join -->
+            <div id="tabJoin" class="tab-content">
+                <div class="panel" style="margin-top:0;">
+                    <div class="panel-title">🔗 پیوستن به بازی</div>
+                    <div class="input-group">
+                        <input id="joinUsername" type="text" placeholder="نام کاربری" value="" maxlength="20" style="flex:1;min-width:100px;" />
+                        <input id="joinGameId" type="text" placeholder="شناسه بازی (UUID)" value="" style="flex:1;min-width:100px;" />
+                    </div>
+                    <div style="margin-top:10px;">
+                        <button id="btnJoin" class="primary" style="width:100%;">پیوستن</button>
+                    </div>
+                    <div id="joinMessage" class="toast hidden" style="margin-top:12px;"></div>
+                    <div style="margin-top:8px;font-size:13px;color:#5a6a88;text-align:center;">
+                        شناسه و نام کاربری آخرین بازی شما ذخیره شده است.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ SCREEN: lobby ============ -->
+        <div id="screenLobby" class="hidden">
+            <div class="status-bar">
+                <div class="game-id">🆔 <span id="lobbyGameId">—</span></div>
+                <div>
+                    <span class="status-badge waiting" id="lobbyStatusBadge">⏳ در انتظار</span>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;">
+                <div class="panel-title">👥 بازیکنان</div>
+                <div id="lobbyPlayers" style="display:flex;gap:16px;flex-wrap:wrap;">
+                    <div style="background:#0f141e;padding:8px 16px;border-radius:10px;border:1px solid #2a3342;">
+                        <div style="font-size:12px;color:#6a7a98;">بازیکن ۱</div>
+                        <div id="lobbyP1Name" style="font-weight:600;">—</div>
+                        <div id="lobbyP1Ready" style="font-size:13px;color:#4a6a5a;">⏳ غایب</div>
+                    </div>
+                    <div style="background:#0f141e;padding:8px 16px;border-radius:10px;border:1px solid #2a3342;">
+                        <div style="font-size:12px;color:#6a7a98;">بازیکن ۲</div>
+                        <div id="lobbyP2Name" style="font-weight:600;">—</div>
+                        <div id="lobbyP2Ready" style="font-size:13px;color:#4a6a5a;">⏳ غایب</div>
+                    </div>
+                    <div style="background:#0f141e;padding:8px 16px;border-radius:10px;border:1px solid #2a3342;">
+                        <div style="font-size:12px;color:#6a7a98;">بازیکن ۳</div>
+                        <div id="lobbyP3Name" style="font-weight:600;">—</div>
+                        <div id="lobbyP3Ready" style="font-size:13px;color:#4a6a5a;">⏳ غایب</div>
+                    </div>
+                </div>
+                <div id="lobbyGameStatus" style="margin-top:10px;font-size:13px;color:#6a7a98;text-align:center;">
+                    در انتظار پیوستن ۳ بازیکن…
+                </div>
+            </div>
+
+            <div style="margin-top:12px;text-align:center;font-size:14px;color:#5a6a88;" id="lobbyWaitingMsg">
+                منتظر تکمیل بازیکنان…
+            </div>
+        </div>
+
+        <!-- ============ SCREEN: game ============ -->
+        <div id="screenGame" class="hidden">
+            <div class="status-bar">
+                <div class="game-id">🆔 <span id="gameGameId">—</span></div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span id="gameTurnBadge" class="status-badge waiting">⏳ در انتظار</span>
+                    <span id="gamePlayerLabel" style="font-size:13px;color:#8896b0;">شما: <strong id="gameYouLabel">—</strong></span>
+                </div>
+            </div>
+
+            <div id="gameWordReveal" class="hidden" style="margin-top:12px;">
+                <div class="panel" style="border-color:#3b8f6a;">
+                    <div class="panel-title">🏆 کلمه فاش شد</div>
+                    <div class="word-reveal">
+                        <div class="box"><div class="label">کلمه مخفی</div><div class="value" id="revealSecretWord">?</div></div>
+                    </div>
+                    <div id="gameWinnerDisplay" style="text-align:center;font-size:18px;font-weight:700;margin-top:6px;color:#d4e07a;"></div>
+                    <div id="playAgainContainer" class="hidden" style="text-align:center;margin-top:12px;">
+                        <button id="btnPlayAgain" class="success">🔄 بازی دوباره</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;">
+                <div class="panel-title">
+                    <span>📋 تاریخچهٔ حدس‌ها</span>
+                    <button id="btnRevealMyWord" class="ghost">👁 نشان دادن کلمهٔ من</button>
+                </div>
+                <div id="guessContainer" class="guess-columns">
+                    <!-- three columns filled dynamically -->
+                </div>
+                <div id="revealMyWordToast" class="toast hidden" style="margin-top:8px;"></div>
+            </div>
+
+            <div class="panel" style="margin-top:12px;" id="gameInputPanel">
+                <div class="panel-title">🔍 حدس شما</div>
+                <div class="letter-boxes" id="guessBoxes">
+                    <input type="text" maxlength="1" class="guess-letter" data-index="0" />
+                    <input type="text" maxlength="1" class="guess-letter" data-index="1" />
+                    <input type="text" maxlength="1" class="guess-letter" data-index="2" />
+                </div>
+                <div style="margin-top:10px;">
+                    <button id="btnSubmitGuess" class="primary" style="width:100%;">حدس</button>
+                </div>
+                <div id="gameGuessMessage" class="toast hidden" style="margin-top:8px;"></div>
+                <div id="gameTurnHint" style="font-size:13px;color:#6a7a98;margin-top:6px;">منتظر نوبت خود باشید.</div>
+            </div>
+
+            <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+                <button id="btnSurrender" class="danger" style="flex:1;">🏳️ تسلیم / پایان</button>
+                <button id="btnLeaveGame" class="outline" style="flex:1;">🚪 خروج</button>
+            </div>
+        </div>
+
+        <!-- ============ MODAL ============ -->
+        <div id="surrenderModal" class="modal-overlay hidden">
+            <div class="modal-box">
+                <h3>🏳️ پایان بازی</h3>
+                <p>نحوهٔ پایان این مسابقه را انتخاب کنید:</p>
+                <div class="modal-actions">
+                    <button id="modalSurrender" class="danger">تسلیم</button>
+                    <button id="modalDraw" class="primary">🤝 تساوی</button>
+                    <button id="modalCancel" class="outline">انصراف</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            /* --- Supabase init --- */
+            const SUPABASE_URL = 'https://ongyncudlvdfjsdbalrc.supabase.co';
+            const SUPABASE_KEY = 'sb_publishable_kSyx8zyndDMuiebcHfPbAQ_LpfLoY21';
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            /* --- Constants --- */
+            const TURN_DURATION = 21;
+            const PLAYER_IDS = ['player1', 'player2', 'player3'];
+            // Fallback words if no guesses exist
+            const FALLBACK_WORDS = ['اب', 'آب', 'اد', 'ار', 'از', 'اس', 'اش', 'اف', 'اق', 'ال', 'ام', 'ان', 'او', 'اه', 'ای',
+                'با', 'بد', 'بر', 'بز', 'بس', 'بش', 'بع', 'بل', 'بن', 'بو', 'بی', 'تا', 'ته', 'تو', 'تی', 'جا', 'جه', 'جو',
+                'چو', 'حا', 'حد', 'حر', 'حس', 'حق', 'حل', 'حم', 'حی', 'خا', 'خر', 'خط', 'خف', 'خل', 'خو', 'دا', 'در', 'دس',
+                'دع', 'دل', 'دم', 'دن', 'دو', 'دی', 'ذا', 'راه', 'رب', 'رج', 'رد', 'رس', 'رض', 'رع', 'رف', 'رق', 'رم', 'رن',
+                'رو', 'ری', 'زا', 'زر', 'زو', 'زی', 'سا', 'سب', 'سر', 'سع', 'سف', 'سق', 'سل', 'سم', 'سن', 'سو', 'سی', 'شا',
+                'شر', 'شس', 'شف', 'شق', 'شک', 'شم', 'شن', 'شو', 'شی', 'صا', 'صر', 'صف', 'صل', 'صن', 'ضو', 'طا', 'طر', 'طو',
+                'ظل', 'عر', 'عش', 'عض', 'عط', 'عظ', 'عل', 'عم', 'عن', 'غب', 'غر', 'غض', 'غل', 'غم', 'فا', 'فت', 'فج', 'فح',
+                'فخ', 'فد', 'فر', 'فس', 'فش', 'فص', 'فض', 'فط', 'فع', 'فل', 'فم', 'فو', 'فی', 'قا', 'قر', 'قس', 'قط', 'قل',
+                'قم', 'قو', 'قی', 'کا', 'کب', 'کت', 'کر', 'کز', 'کس', 'کش', 'کف', 'کل', 'کن', 'کو', 'کی', 'لا', 'لب', 'لز',
+                'لس', 'لط', 'لع', 'لغ', 'لف', 'لق', 'لک', 'لل', 'لم', 'لن', 'لو', 'لی', 'ما', 'مج', 'مح', 'مد', 'مر', 'مز',
+                'مس', 'مع', 'مف', 'مق', 'مل', 'من', 'مو', 'می', 'نا', 'نخ', 'ند', 'نر', 'نز', 'نس', 'نش', 'نص', 'نظ', 'نع',
+                'نق', 'نک', 'نل', 'نم', 'نن', 'نو', 'نی', 'وا', 'ود', 'ور', 'وز', 'وس', 'وش', 'وص', 'وض', 'وع', 'وف', 'وق',
+                'ول', 'وم', 'ون', 'وه', 'وی', 'یا', 'یخ', 'یر', 'یز', 'یس', 'یش', 'یف', 'یک', 'یل', 'یم'
+            ];
+
+            /* --- DOM refs --- */
+            const $ = (id) => document.getElementById(id);
+
+            const screenJoin = $('screenJoin');
+            const screenLobby = $('screenLobby');
+            const screenGame = $('screenGame');
+
+            // Tabs
+            const tabCreate = $('tabCreate');
+            const tabJoin = $('tabJoin');
+            const tabs = document.querySelectorAll('.tab');
+
+            // Create tab
+            const createUsername = $('createUsername');
+            const createGameId = $('createGameId');
+            const btnCreateNew = $('btnCreateNew');
+            const createMessage = $('createMessage');
+            const creationInfo = $('creationInfo');
+            const qrImage = $('qrImage');
+            const createdUuidDisplay = $('createdUuidDisplay');
+            const copyUuidBtn = $('copyUuidBtn');
+
+            // Join tab
+            const joinUsername = $('joinUsername');
+            const joinGameId = $('joinGameId');
+            const btnJoin = $('btnJoin');
+            const joinMessage = $('joinMessage');
+
+            // Lobby
+            const lobbyGameId = $('lobbyGameId');
+            const lobbyStatusBadge = $('lobbyStatusBadge');
+            const lobbyP1Name = $('lobbyP1Name');
+            const lobbyP2Name = $('lobbyP2Name');
+            const lobbyP3Name = $('lobbyP3Name');
+            const lobbyP1Ready = $('lobbyP1Ready');
+            const lobbyP2Ready = $('lobbyP2Ready');
+            const lobbyP3Ready = $('lobbyP3Ready');
+            const lobbyGameStatus = $('lobbyGameStatus');
+            const lobbyWaitingMsg = $('lobbyWaitingMsg');
+
+            // Game
+            const gameGameId = $('gameGameId');
+            const gameTurnBadge = $('gameTurnBadge');
+            const gameYouLabel = $('gameYouLabel');
+            const gameWordReveal = $('gameWordReveal');
+            const revealSecretWord = $('revealSecretWord');
+            const gameWinnerDisplay = $('gameWinnerDisplay');
+            const playAgainContainer = $('playAgainContainer');
+            const btnPlayAgain = $('btnPlayAgain');
+            const guessContainer = $('guessContainer');
+            const guessBoxes = document.querySelectorAll('#guessBoxes input');
+            const btnSubmitGuess = $('btnSubmitGuess');
+            const gameGuessMessage = $('gameGuessMessage');
+            const gameTurnHint = $('gameTurnHint');
+            const btnSurrender = $('btnSurrender');
+            const btnLeaveGame = $('btnLeaveGame');
+            const btnRevealMyWord = $('btnRevealMyWord');
+            const revealMyWordToast = $('revealMyWordToast');
+
+            // Modal
+            const surrenderModal = $('surrenderModal');
+            const modalSurrender = $('modalSurrender');
+            const modalDraw = $('modalDraw');
+            const modalCancel = $('modalCancel');
+
+            const connSpinner = $('connSpinner');
+            const connLabel = $('connLabel');
+
+            /* --- state --- */
+            let state = {
+                gameId: null,
+                playerId: null,
+                playerName: null,
+                game: null,
+                guesses: [],
+                subscription: null,
+                isMyTurn: false,
+                gameOver: false,
+                turnTimer: null,
+            };
+
+            /* --- localStorage keys --- */
+            const STORAGE_GAME_ID = 'garnet_last_game_id';
+            const STORAGE_USERNAME = 'garnet_last_username';
+
+            /* --- helpers --- */
+            function showScreen(screen) {
+                [screenJoin, screenLobby, screenGame].forEach(el => el.classList.add('hidden'));
+                if (screen) screen.classList.remove('hidden');
+            }
+
+            function setConnectionStatus(ok, msg) {
+                connSpinner.classList.toggle('hidden', ok);
+                connLabel.textContent = msg || (ok ? 'متصل' : 'در حال اتصال…');
+                connLabel.style.color = ok ? '#6a9a7a' : '#6a7a98';
+            }
+
+            function showToast(el, msg, type) {
+                if (!msg) { el.classList.add('hidden');
+                    el.textContent = ''; return; }
+                el.classList.remove('hidden', 'error', 'success');
+                if (type) el.classList.add(type);
+                el.textContent = msg;
+            }
+
+            function getWordFromBoxes(boxes) {
+                let word = '';
+                boxes.forEach(box => {
+                    const val = box.value.trim();
+                    if (val) word += val;
+                    else word += ' ';
+                });
+                return word.trim();
+            }
+
+            function isValidPersianWord(word) {
+                return /^[\u0600-\u06FF]{3}$/.test(word);
+            }
+
+            function getPlayerLabel(playerId) {
+                if (!state.game) return '—';
+                if (playerId === 'player1') return state.game.player1_id || 'بازیکن ۱';
+                if (playerId === 'player2') return state.game.player2_id || 'بازیکن ۲';
+                if (playerId === 'player3') return state.game.player3_id || 'بازیکن ۳';
+                return '—';
+            }
+
+            function getMyPlayerId() {
+                return state.playerId;
+            }
+
+            function getPlayerIndex(playerId) {
+                return PLAYER_IDS.indexOf(playerId);
+            }
+
+            /* --- feedback: count of matching letters (any position) --- */
+            function calculateFeedback(guess, secret) {
+                if (!guess || !secret || guess.length !== 3 || secret.length !== 3) return '0';
+                const g = guess.split('');
+                const s = secret.split('');
+                let matches = 0;
+                const usedS = [false, false, false];
+                const usedG = [false, false, false];
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        if (!usedG[i] && !usedS[j] && g[i] === s[j]) {
+                            matches++;
+                            usedG[i] = true;
+                            usedS[j] = true;
+                            break;
+                        }
+                    }
+                }
+                return String(matches);
+            }
+
+            /* --- get next turn in cyclic order: 1→2→3→1→2→3→... --- */
+            function getNextTurn(currentTurn) {
+                const idx = getPlayerIndex(currentTurn);
+                const nextIdx = (idx + 1) % PLAYER_IDS.length;
+                return PLAYER_IDS[nextIdx];
+            }
+
+            /* --- render guess history (three columns) --- */
+            function renderGuesses() {
+                const container = guessContainer;
+                const guesses = state.guesses || [];
+                const game = state.game;
+                const isFinished = game && game.status === 'finished';
+                const secretWord = game ? game.secret_word : null;
+
+                // Group guesses by player
+                const p1Guesses = guesses.filter(g => g.player_id === 'player1');
+                const p2Guesses = guesses.filter(g => g.player_id === 'player2');
+                const p3Guesses = guesses.filter(g => g.player_id === 'player3');
+
+                function renderGuessItem(guess, isMe, secretWord) {
+                    const who = isMe ? 'شما' : getPlayerLabel(guess.player_id);
+                    const fb = guess.feedback || '?';
+                    const isCorrect = fb === '3' && guess.guess_word && secretWord &&
+                        guess.guess_word === secretWord;
+                    const timeStr = guess.created_at ? new Date(guess.created_at).toLocaleTimeString([], { hour: '2-digit',
+                            minute: '2-digit' }) : '';
+                    const wordChars = guess.guess_word ? guess.guess_word.split('') : ['?', '?', '?'];
+                    const secretChars = secretWord ? secretWord.split('') : [];
+                    let wordHtml = '';
+                    for (let i = 0; i < 3; i++) {
+                        const char = wordChars[i] || '?';
+                        const matched = secretChars.length === 3 && secretChars.includes(char);
+                        wordHtml += `<span class="letter ${matched ? 'matched' : ''}">${char}</span>`;
+                    }
+                    return `
+                        <div class="guess-item ${isMe ? 'me' : 'opponent'}">
+                            <span class="word">${wordHtml}</span>
+                            <span class="feedback ${isCorrect ? 'correct' : ''}">${isCorrect ? '✓' : ''} ${fb}</span>
+                            ${timeStr ? `<span class="time">${timeStr}</span>` : ''}
+                        </div>
+                    `;
+                }
+
+                function renderColumn(playerId, guessesList, secretWord, isMe) {
+                    let html = '';
+                    const playerName = getPlayerLabel(playerId);
+                    if (guessesList.length === 0) {
+                        html =
+                            `<div style="color:#5a6a88;text-align:center;padding:12px 0;font-size:13px;">حدسی ثبت نشده</div>`;
+                    } else {
+                        html = guessesList.map(g => renderGuessItem(g, isMe, secretWord)).join('');
+                    }
+                    return {
+                        name: playerName,
+                        html: html,
+                        playerId: playerId
+                    };
+                }
+
+                const p1Data = renderColumn('player1', p1Guesses, secretWord, state.playerId === 'player1');
+                const p2Data = renderColumn('player2', p2Guesses, secretWord, state.playerId === 'player2');
+                const p3Data = renderColumn('player3', p3Guesses, secretWord, state.playerId === 'player3');
+
+                container.innerHTML = `
+                    <div class="guess-column">
+                        <div class="col-header" id="colHeaderP1">
+                            <div class="name-row">
+                                <span>${p1Data.name}</span>
+                                <span class="timer-text" id="timerTextP1">⏱</span>
+                            </div>
+                            <div class="timer-bar-track" id="timerBarTrackP1">
+                                <div class="timer-bar-fill" id="timerBarFillP1" style="width:0%;"></div>
+                            </div>
+                            <div class="player-status" id="statusP1">-</div>
+                        </div>
+                        <div class="guess-list">${p1Data.html}</div>
+                    </div>
+                    <div class="guess-column">
+                        <div class="col-header" id="colHeaderP2">
+                            <div class="name-row">
+                                <span>${p2Data.name}</span>
+                                <span class="timer-text" id="timerTextP2">⏱</span>
+                            </div>
+                            <div class="timer-bar-track" id="timerBarTrackP2">
+                                <div class="timer-bar-fill" id="timerBarFillP2" style="width:0%;"></div>
+                            </div>
+                            <div class="player-status" id="statusP2">-</div>
+                        </div>
+                        <div class="guess-list">${p2Data.html}</div>
+                    </div>
+                    <div class="guess-column">
+                        <div class="col-header" id="colHeaderP3">
+                            <div class="name-row">
+                                <span>${p3Data.name}</span>
+                                <span class="timer-text" id="timerTextP3">⏱</span>
+                            </div>
+                            <div class="timer-bar-track" id="timerBarTrackP3">
+                                <div class="timer-bar-fill" id="timerBarFillP3" style="width:0%;"></div>
+                            </div>
+                            <div class="player-status" id="statusP3">-</div>
+                        </div>
+                        <div class="guess-list">${p3Data.html}</div>
+                    </div>
+                `;
+
+                const lists = container.querySelectorAll('.guess-list');
+                lists.forEach(list => list.scrollTop = list.scrollHeight);
+
+                updateTimers();
+                updatePlayerStatuses();
+            }
+
+            /* --- update player statuses (joined/not joined) --- */
+            function updatePlayerStatuses() {
+                if (!state.game) return;
+                const game = state.game;
+                const statusMap = {
+                    'player1': { el: document.getElementById('statusP1'), joined: !!game.player1_id },
+                    'player2': { el: document.getElementById('statusP2'), joined: !!game.player2_id },
+                    'player3': { el: document.getElementById('statusP3'), joined: !!game.player3_id },
+                };
+                Object.keys(statusMap).forEach(key => {
+                    const data = statusMap[key];
+                    if (data.el) {
+                        data.el.textContent = data.joined ? '✅ حاضر' : '⏳ غایب';
+                        data.el.style.color = data.joined ? '#6abf8a' : '#6a7a98';
+                    }
+                });
+            }
+
+            /* --- timer management with bar --- */
+            let timerInterval = null;
+
+            function startTimer() {
+                clearTimer();
+                if (!state.game || state.game.status !== 'playing') return;
+                const turn = state.game.current_turn;
+                if (!turn) return;
+                const turnStartedAt = state.game.turn_started_at;
+                if (!turnStartedAt) {
+                    refreshGameData();
+                    return;
+                }
+
+                const startTime = new Date(turnStartedAt).getTime();
+                if (isNaN(startTime)) {
+                    console.warn('Invalid turn_started_at:', turnStartedAt);
+                    refreshGameData();
+                    return;
+                }
+                const now = Date.now();
+                let elapsed = (now - startTime) / 1000;
+                let remaining = Math.max(0, TURN_DURATION - elapsed);
+
+                if (remaining > TURN_DURATION + 60 || remaining < -60) {
+                    console.warn('Timer out of bounds, refreshing game data');
+                    refreshGameData();
+                    return;
+                }
+
+                updateTimerDisplay(remaining);
+
+                timerInterval = setInterval(() => {
+                    const now2 = Date.now();
+                    const elapsed2 = (now2 - startTime) / 1000;
+                    let rem = Math.max(0, TURN_DURATION - elapsed2);
+                    if (rem > TURN_DURATION + 60 || rem < -60) {
+                        clearTimer();
+                        refreshGameData();
+                        return;
+                    }
+                    updateTimerDisplay(rem);
+                    if (rem <= 0) {
+                        clearTimer();
+                        handleTimeout();
+                    }
+                }, 500);
+            }
+
+            function clearTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }
+
+            function updateTimerDisplay(seconds) {
+                const game = state.game;
+                if (!game) return;
+                const turn = game.current_turn;
+                const isPlaying = game.status === 'playing';
+                const secs = Math.ceil(seconds);
+
+                const timerTexts = {
+                    'player1': document.getElementById('timerTextP1'),
+                    'player2': document.getElementById('timerTextP2'),
+                    'player3': document.getElementById('timerTextP3'),
+                };
+                const barFills = {
+                    'player1': document.getElementById('timerBarFillP1'),
+                    'player2': document.getElementById('timerBarFillP2'),
+                    'player3': document.getElementById('timerBarFillP3'),
+                };
+
+                // Reset all
+                PLAYER_IDS.forEach(pid => {
+                    if (barFills[pid]) {
+                        barFills[pid].style.width = '0%';
+                        barFills[pid].className = 'timer-bar-fill';
+                    }
+                    if (timerTexts[pid]) {
+                        timerTexts[pid].textContent = '⏱';
+                        timerTexts[pid].className = 'timer-text';
+                    }
+                });
+
+                if (isPlaying && turn) {
+                    const pct = Math.min(100, Math.max(0, (seconds / TURN_DURATION) * 100));
+                    const display = secs > 0 ? secs : '۰';
+                    const warning = secs <= 10 && secs > 0;
+
+                    if (barFills[turn]) {
+                        barFills[turn].style.width = pct + '%';
+                        if (turn === state.playerId) {
+                            barFills[turn].className = 'timer-bar-fill your-turn';
+                        } else {
+                            barFills[turn].className = 'timer-bar-fill opponent-turn';
+                        }
+                    }
+                    if (timerTexts[turn]) {
+                        timerTexts[turn].textContent = display;
+                        timerTexts[turn].className = 'timer-text' + (warning ? ' warning' : '');
+                    }
+                }
+            }
+
+            function updateTimers() {
+                if (!state.game || state.game.status !== 'playing') {
+                    clearTimer();
+                    PLAYER_IDS.forEach(pid => {
+                        const text = document.getElementById('timerTextP' + (getPlayerIndex(pid) + 1));
+                        const bar = document.getElementById('timerBarFillP' + (getPlayerIndex(pid) + 1));
+                        if (text) { text.textContent = '⏱';
+                            text.className = 'timer-text'; }
+                        if (bar) { bar.style.width = '0%';
+                            bar.className = 'timer-bar-fill finished'; }
+                    });
+                    return;
+                }
+
+                const turn = state.game.current_turn;
+                const isMyTurn = turn === state.playerId;
+                if (isMyTurn && state.game.status === 'playing') {
+                    startTimer();
+                } else {
+                    clearTimer();
+                    const turnStartedAt = state.game.turn_started_at;
+                    if (turnStartedAt) {
+                        const startTime = new Date(turnStartedAt).getTime();
+                        if (!isNaN(startTime)) {
+                            const now = Date.now();
+                            let elapsed = (now - startTime) / 1000;
+                            let remaining = Math.max(0, TURN_DURATION - elapsed);
+                            if (remaining <= TURN_DURATION + 60 && remaining >= -60) {
+                                updateTimerDisplay(remaining);
+                                return;
+                            }
+                        }
+                    }
+                    // Fallback: reset
+                    PLAYER_IDS.forEach(pid => {
+                        const text = document.getElementById('timerTextP' + (getPlayerIndex(pid) + 1));
+                        const bar = document.getElementById('timerBarFillP' + (getPlayerIndex(pid) + 1));
+                        if (text) { text.textContent = '⏱';
+                            text.className = 'timer-text'; }
+                        if (bar) { bar.style.width = '0%';
+                            bar.className = 'timer-bar-fill finished'; }
+                    });
+                }
+            }
+
+            async function handleTimeout() {
+                if (!state.game || state.game.status !== 'playing') return;
+                if (state.game.current_turn !== state.playerId) return;
+                try {
+                    const game = state.game;
+                    const nextTurn = getNextTurn(game.current_turn);
+                    const { error } = await supabase
+                        .from('games')
+                        .update({
+                            current_turn: nextTurn,
+                            turn_started_at: new Date().toISOString(),
+                        })
+                        .eq('id', state.gameId)
+                        .eq('status', 'playing')
+                        .eq('current_turn', state.playerId);
+                    if (error) {
+                        console.warn('Timeout skip error:', error);
+                        showToast(gameGuessMessage, 'خطا در انتقال نوبت.', 'error');
+                    } else {
+                        showToast(gameGuessMessage, '⏰ زمان تمام شد! نوبت به بعدی منتقل شد.', 'error');
+                        setTimeout(() => showToast(gameGuessMessage, '', ''), 3000);
+                    }
+                } catch (err) {
+                    console.warn(err);
+                }
+            }
+
+            /* --- UI update functions --- */
+            function updateGameUI() {
+                const game = state.game;
+                if (!game) return;
+
+                gameGameId.textContent = game.id;
+                gameYouLabel.textContent = state.playerName || state.playerId || '—';
+
+                const status = game.status;
+                const turn = game.current_turn;
+                const isFinished = status === 'finished';
+                const isPlaying = status === 'playing';
+
+                let badgeText = '⏳ در انتظار';
+                let badgeClass = 'waiting';
+                if (isFinished) {
+                    const winner = game.winner;
+                    if (winner === 'draw') {
+                        badgeText = '🤝 تساوی';
+                        badgeClass = 'draw';
+                    } else if (winner === state.playerId) {
+                        badgeText = '🏆 شما برنده شدید!';
+                        badgeClass = 'win';
+                    } else if (winner) {
+                        badgeText = `😞 ${getPlayerLabel(winner)} برنده شد`;
+                        badgeClass = 'lose';
+                    } else {
+                        badgeText = '🏁 پایان بازی';
+                        badgeClass = 'finished';
+                    }
+                } else if (isPlaying) {
+                    const isMyTurn = turn === state.playerId;
+                    badgeText = isMyTurn ? '▶️ نوبت شماست!' : `⏳ نوبت ${getPlayerLabel(turn)}`;
+                    badgeClass = isMyTurn ? 'your-turn' : 'playing';
+                } else {
+                    badgeText = '⏳ در انتظار…';
+                    badgeClass = 'waiting';
+                }
+                gameTurnBadge.textContent = badgeText;
+                gameTurnBadge.className = `status-badge ${badgeClass}`;
+
+                if (isFinished) {
+                    gameTurnHint.textContent = 'بازی تمام شد.';
+                } else if (isPlaying) {
+                    const isMyTurn = turn === state.playerId;
+                    gameTurnHint.textContent = isMyTurn ?
+                        'یک کلمهٔ ۳ حرفی حدس بزنید.' :
+                        `در انتظار حدس ${getPlayerLabel(turn)}…`;
+                } else {
+                    gameTurnHint.textContent = 'در انتظار شروع بازی…';
+                }
+
+                const canGuess = isPlaying && turn === state.playerId && !isFinished;
+                guessBoxes.forEach(box => box.disabled = !canGuess);
+                btnSubmitGuess.disabled = !canGuess;
+
+                if (isFinished) {
+                    guessBoxes.forEach(box => box.placeholder = '—');
+                } else if (!isPlaying) {
+                    guessBoxes.forEach(box => box.placeholder = '?');
+                } else if (turn !== state.playerId) {
+                    guessBoxes.forEach(box => box.placeholder = '?');
+                } else {
+                    guessBoxes.forEach(box => box.placeholder = '');
+                }
+
+                // Show secret word if finished
+                if (isFinished) {
+                    gameWordReveal.classList.remove('hidden');
+                    const secret = game.secret_word || '???';
+                    revealSecretWord.textContent = secret;
+                    const winner = game.winner;
+                    if (winner === 'draw') {
+                        gameWinnerDisplay.textContent = '🤝 بازی مساوی شد!';
+                        gameWinnerDisplay.style.color = '#a0c8d4';
+                    } else if (winner === state.playerId) {
+                        gameWinnerDisplay.textContent = '🎉 شما برنده شدید! 🎉';
+                        gameWinnerDisplay.style.color = '#7ad4a0';
+                    } else if (winner) {
+                        gameWinnerDisplay.textContent = `${getPlayerLabel(winner)} برنده شد!`;
+                        gameWinnerDisplay.style.color = '#d4a07a';
+                    } else {
+                        gameWinnerDisplay.textContent = 'بازی تمام شد.';
+                        gameWinnerDisplay.style.color = '#8896b0';
+                    }
+                    playAgainContainer.classList.remove('hidden');
+                } else {
+                    gameWordReveal.classList.add('hidden');
+                    playAgainContainer.classList.add('hidden');
+                }
+
+                renderGuesses();
+
+                state.gameOver = isFinished;
+                btnSurrender.disabled = !isPlaying;
+
+                updateTimers();
+
+                if (canGuess) {
+                    setTimeout(() => guessBoxes[0].focus(), 100);
+                }
+            }
+
+            function updateLobbyUI() {
+                const game = state.game;
+                if (!game) return;
+
+                lobbyGameId.textContent = game.id;
+                const status = game.status;
+
+                // Player names
+                lobbyP1Name.textContent = game.player1_id || '—';
+                lobbyP2Name.textContent = game.player2_id || '—';
+                lobbyP3Name.textContent = game.player3_id || '—';
+
+                const p1Joined = !!game.player1_id;
+                const p2Joined = !!game.player2_id;
+                const p3Joined = !!game.player3_id;
+
+                lobbyP1Ready.textContent = p1Joined ? '✅ حاضر' : '⏳ غایب';
+                lobbyP1Ready.style.color = p1Joined ? '#6abf8a' : '#6a7a98';
+                lobbyP2Ready.textContent = p2Joined ? '✅ حاضر' : '⏳ غایب';
+                lobbyP2Ready.style.color = p2Joined ? '#6abf8a' : '#6a7a98';
+                lobbyP3Ready.textContent = p3Joined ? '✅ حاضر' : '⏳ غایب';
+                lobbyP3Ready.style.color = p3Joined ? '#6abf8a' : '#6a7a98';
+
+                const allJoined = p1Joined && p2Joined && p3Joined;
+
+                if (status === 'playing' || status === 'finished') {
+                    lobbyStatusBadge.textContent = status === 'playing' ? '▶️ در حال بازی' : '🏁 پایان';
+                    lobbyStatusBadge.className = `status-badge ${status === 'playing' ? 'playing' : 'finished'}`;
+                } else {
+                    lobbyStatusBadge.textContent = '⏳ در انتظار…';
+                    lobbyStatusBadge.className = 'status-badge waiting';
+                }
+
+                if (status === 'playing' || status === 'finished') {
+                    lobbyGameStatus.textContent = status === 'playing' ? 'بازی در جریان است…' : 'بازی تمام شد.';
+                } else if (allJoined) {
+                    lobbyGameStatus.textContent = '✅ همه حاضرند! بازی شروع می‌شود…';
+                } else {
+                    const missing = !p1Joined ? 'بازیکن ۱' : !p2Joined ? 'بازیکن ۲' : !p3Joined ? 'بازیکن ۳' : '';
+                    lobbyGameStatus.textContent = `⏳ در انتظار پیوستن ${missing}…`;
+                }
+
+                lobbyWaitingMsg.textContent = allJoined ? 'همه حاضرند!' : 'در انتظار تکمیل بازیکنان…';
+
+                if (status === 'playing' || status === 'finished') {
+                    showScreen(screenGame);
+                    refreshGameData();
+                }
+            }
+
+            /* --- refresh game data --- */
+            async function refreshGameData() {
+                if (!state.gameId) return;
+                try {
+                    const { data: game } = await fetchGame(state.gameId);
+                    if (game) {
+                        state.game = game;
+                        const { data: guesses } = await fetchGuesses(state.gameId);
+                        if (guesses) state.guesses = guesses;
+                        updateGameUI();
+                    }
+                } catch (e) { console.warn('refresh error:', e); }
+            }
+
+            /* --- DB functions --- */
+            async function fetchGame(gameId) {
+                const { data, error } = await supabase
+                    .from('games')
+                    .select('*')
+                    .eq('id', gameId)
+                    .single();
+                if (error) return { error };
+                return { data };
+            }
+
+            async function fetchGuesses(gameId) {
+                const { data, error } = await supabase
+                    .from('guesses')
+                    .select('*')
+                    .eq('game_id', gameId)
+                    .order('created_at', { ascending: true });
+                if (error) return { error };
+                return { data: data || [] };
+            }
+
+            async function fetchRandomSecretWord() {
+                try {
+                    const { data, error } = await supabase
+                        .from('guesses')
+                        .select('guess_word')
+                        .not('guess_word', 'is', null)
+                        .neq('guess_word', '');
+                    if (error) throw error;
+                    const words = data.map(d => d.guess_word).filter(w =>
+                        w && w.length === 3 && isValidPersianWord(w)
+                    );
+                    if (words.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * words.length);
+                        return words[randomIndex];
+                    }
+                } catch (e) { console.warn('Error fetching secret word:', e); }
+                return FALLBACK_WORDS[Math.floor(Math.random() * FALLBACK_WORDS.length)];
+            }
+
+            async function createGame(gameId, playerName) {
+                const secretWord = await fetchRandomSecretWord();
+                const { data, error } = await supabase
+                    .from('games')
+                    .insert([{
+                        id: gameId,
+                        player1_id: playerName,
+                        player2_id: null,
+                        player3_id: null,
+                        secret_word: secretWord,
+                        status: 'waiting',
+                        current_turn: null,
+                        winner: null,
+                        turn_started_at: null,
+                    }])
+                    .select()
+                    .single();
+                if (error) return { error };
+                return { data };
+            }
+
+            async function joinGame(gameId, playerName) {
+                const { data: game, error: fetchErr } = await fetchGame(gameId);
+                if (fetchErr) return { error: 'بازی یافت نشد.' };
+                if (game.status === 'finished') return { error: 'بازی تمام شده است.' };
+                if (game.status === 'playing') return { error: 'بازی در جریان است.' };
+
+                // Check if player already in game
+                const players = [
+                    { id: 'player1', name: game.player1_id },
+                    { id: 'player2', name: game.player2_id },
+                    { id: 'player3', name: game.player3_id },
+                ];
+                for (const p of players) {
+                    if (p.name && p.name.toLowerCase() === playerName.toLowerCase()) {
+                        return { data: game, playerId: p.id };
+                    }
+                }
+
+                // Find empty slot
+                let slot = null;
+                for (const p of players) {
+                    if (!p.name) { slot = p.id; break; }
+                }
+                if (!slot) return { error: 'ظرفیت بازی پر است (۳ بازیکن).' };
+
+                const updateData = {};
+                updateData[slot + '_id'] = playerName;
+                const { data: updated, error: updateErr } = await supabase
+                    .from('games')
+                    .update(updateData)
+                    .eq('id', gameId)
+                    .select()
+                    .single();
+                if (updateErr) return { error: 'خطا در پیوستن: ' + updateErr.message };
+                return { data: updated, playerId: slot };
+            }
+
+            async function submitGuess(gameId, playerId, guessWord) {
+                const { data: game, error: fetchErr } = await fetchGame(gameId);
+                if (fetchErr || !game) return { error: 'بازی یافت نشد.' };
+                const secretWord = game.secret_word;
+                if (!secretWord || secretWord.length !== 3) {
+                    return { error: 'کلمه مخفی پیدا نشد.' };
+                }
+
+                const feedback = calculateFeedback(guessWord, secretWord);
+                const isCorrect = guessWord === secretWord;
+
+                const { data: guess, error: insertErr } = await supabase
+                    .from('guesses')
+                    .insert([{
+                        game_id: gameId,
+                        player_id: playerId,
+                        guess_word: guessWord,
+                        feedback: feedback,
+                    }])
+                    .select()
+                    .single();
+                if (insertErr) return { error: 'خطا در ثبت حدس: ' + insertErr.message };
+
+                let updateData = {};
+                if (isCorrect) {
+                    updateData = {
+                        status: 'finished',
+                        winner: playerId,
+                        current_turn: null,
+                        turn_started_at: null,
+                    };
+                } else {
+                    const nextTurn = getNextTurn(game.current_turn);
+                    updateData = {
+                        current_turn: nextTurn,
+                        turn_started_at: new Date().toISOString(),
+                    };
+                }
+                if (game.status === 'waiting' || game.status === 'ready') {
+                    // This should not happen because game auto-starts when all joined
+                    updateData.status = 'playing';
+                    // Set initial turn to player1
+                    updateData.current_turn = 'player1';
+                    updateData.turn_started_at = new Date().toISOString();
+                }
+
+                const { error: updateErr } = await supabase
+                    .from('games')
+                    .update(updateData)
+                    .eq('id', gameId);
+                if (updateErr) return { error: 'خطا در بروزرسانی بازی: ' + updateErr.message };
+
+                return { data: guess };
+            }
+
+            async function tryStartGame(gameId) {
+                const { data: game, error } = await fetchGame(gameId);
+                if (error || !game) return;
+                if (game.status === 'playing' || game.status === 'finished') return;
+
+                const players = [game.player1_id, game.player2_id, game.player3_id].filter(p => p);
+                if (players.length === 3) {
+                    // All players joined, start game immediately
+                    await supabase
+                        .from('games')
+                        .update({
+                            status: 'playing',
+                            current_turn: 'player1',
+                            turn_started_at: new Date().toISOString(),
+                        })
+                        .eq('id', gameId)
+                        .eq('status', 'waiting');
+                }
+            }
+
+            /* --- Play Again chain --- */
+            async function handlePlayAgain() {
+                if (!state.game || !state.playerId) return;
+                const oldGame = state.game;
+
+                // Check if this game already has a next_game_id
+                if (oldGame.next_game_id) {
+                    // Switch to the existing next game
+                    const { data: nextGame, error: fetchErr } = await fetchGame(oldGame.next_game_id);
+                    if (fetchErr || !nextGame) {
+                        showToast(gameGuessMessage, 'بازی بعدی پیدا نشد، دوباره تلاش کنید.', 'error');
+                        return;
+                    }
+                    // Determine playerId in the new game
+                    let playerId = null;
+                    if (nextGame.player1_id && nextGame.player1_id.toLowerCase() === state.playerName.toLowerCase()) {
+                        playerId = 'player1';
+                    } else if (nextGame.player2_id && nextGame.player2_id.toLowerCase() === state.playerName
+                        .toLowerCase()) {
+                        playerId = 'player2';
+                    } else if (nextGame.player3_id && nextGame.player3_id.toLowerCase() === state.playerName
+                        .toLowerCase()) {
+                        playerId = 'player3';
+                    } else {
+                        showToast(gameGuessMessage, 'شما در بازی بعدی نیستید.', 'error');
+                        return;
+                    }
+                    // Switch to the next game
+                    state.gameId = oldGame.next_game_id;
+                    state.playerId = playerId;
+                    state.game = nextGame;
+                    state.guesses = [];
+                    state.gameOver = false;
+                    setupSubscription(oldGame.next_game_id);
+                    showScreen(screenLobby);
+                    updateLobbyUI();
+                    return;
+                }
+
+                // No next game yet — create one
+                const p1Name = oldGame.player1_id;
+                const p2Name = oldGame.player2_id;
+                const p3Name = oldGame.player3_id;
+                if (!p1Name || !p2Name || !p3Name) {
+                    showToast(gameGuessMessage, 'همه بازیکنان برای بازی دوباره حضور ندارند.', 'error');
+                    return;
+                }
+
+                const newGameId = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+                    /[xy]/g, function(c) {
+                        var r = Math.random() * 16 | 0,
+                            v = c == 'x' ? r : (r & 0x3 | 0x8);
+                        return v.toString(16);
+                    });
+                try {
+                    const secretWord = await fetchRandomSecretWord();
+                    const { data: newGame, error } = await supabase
+                        .from('games')
+                        .insert([{
+                            id: newGameId,
+                            player1_id: p1Name,
+                            player2_id: p2Name,
+                            player3_id: p3Name,
+                            secret_word: secretWord,
+                            status: 'waiting',
+                            current_turn: null,
+                            winner: null,
+                            turn_started_at: null,
+                        }])
+                        .select()
+                        .single();
+                    if (error) { throw error; }
+
+                    // Link the new game from the old one
+                    await supabase
+                        .from('games')
+                        .update({ next_game_id: newGameId })
+                        .eq('id', oldGame.id);
+
+                    // Determine playerId in the new game
+                    let playerId = null;
+                    if (newGame.player1_id && newGame.player1_id.toLowerCase() === state.playerName.toLowerCase()) {
+                        playerId = 'player1';
+                    } else if (newGame.player2_id && newGame.player2_id.toLowerCase() === state.playerName
+                        .toLowerCase()) {
+                        playerId = 'player2';
+                    } else if (newGame.player3_id && newGame.player3_id.toLowerCase() === state.playerName
+                        .toLowerCase()) {
+                        playerId = 'player3';
+                    }
+
+                    storeLastUsed(newGameId, state.playerName);
+                    state.gameId = newGameId;
+                    state.playerId = playerId;
+                    state.game = newGame;
+                    state.guesses = [];
+                    state.gameOver = false;
+                    setupSubscription(newGameId);
+                    showScreen(screenLobby);
+                    updateLobbyUI();
+                } catch (err) {
+                    console.warn('Play again error:', err);
+                    showToast(gameGuessMessage, 'خطا در ساخت بازی جدید.', 'error');
+                }
+            }
+
+            /* --- store last used game and username --- */
+            function storeLastUsed(gameId, username) {
+                if (gameId) localStorage.setItem(STORAGE_GAME_ID, gameId);
+                if (username) localStorage.setItem(STORAGE_USERNAME, username.toLowerCase());
+            }
+
+            function loadLastUsed() {
+                return {
+                    gameId: localStorage.getItem(STORAGE_GAME_ID) || '',
+                    username: localStorage.getItem(STORAGE_USERNAME) || '',
+                };
+            }
+
+            /* --- leave / reset state --- */
+            function leaveGame() {
+                if (state.subscription) {
+                    supabase.removeChannel(state.subscription);
+                    state.subscription = null;
+                }
+                clearTimer();
+                state.gameId = null;
+                state.playerId = null;
+                state.playerName = null;
+                state.game = null;
+                state.guesses = [];
+                state.isMyTurn = false;
+                state.gameOver = false;
+
+                showScreen(screenJoin);
+                creationInfo.classList.add('hidden');
+                showToast(createMessage, '', '');
+                showToast(joinMessage, '', '');
+                showToast(gameGuessMessage, '', '');
+                showToast(revealMyWordToast, '', '');
+                const last = loadLastUsed();
+                if (last.gameId) joinGameId.value = last.gameId;
+                if (last.username) joinUsername.value = last.username;
+                setConnectionStatus(true, 'متصل');
+                switchTab('tabJoin');
+            }
+
+            /* --- setup realtime --- */
+            function setupSubscription(gameId) {
+                if (state.subscription) {
+                    supabase.removeChannel(state.subscription);
+                    state.subscription = null;
+                }
+
+                const channel = supabase
+                    .channel(`game:${gameId}`)
+                    .on('postgres_changes', {
+                        event: '*',
+                        schema: 'public',
+                        table: 'games',
+                        filter: `id=eq.${gameId}`,
+                    }, async () => {
+                        const { data, error } = await fetchGame(gameId);
+                        if (error) return;
+                        state.game = data;
+                        const { data: guesses } = await fetchGuesses(gameId);
+                        if (guesses) state.guesses = guesses;
+                        if (state.game.status === 'playing' || state.game.status === 'finished') {
+                            showScreen(screenGame);
+                            updateGameUI();
+                        } else {
+                            showScreen(screenLobby);
+                            updateLobbyUI();
+                        }
+                        if (state.game.status === 'waiting' || state.game.status === 'ready') {
+                            await tryStartGame(gameId);
+                        }
+                    })
+                    .on('postgres_changes', {
+                        event: '*',
+                        schema: 'public',
+                        table: 'guesses',
+                        filter: `game_id=eq.${gameId}`,
+                    }, async () => {
+                        const { data } = await fetchGuesses(gameId);
+                        if (data) state.guesses = data;
+                        if (state.game && (state.game.status === 'playing' || state.game.status === 'finished')) {
+                            renderGuesses();
+                            const { data: gData } = await fetchGame(gameId);
+                            if (gData) state.game = gData;
+                            updateGameUI();
+                        }
+                    })
+                    .subscribe((status) => {
+                        if (status === 'SUBSCRIBED') setConnectionStatus(true, 'متصل');
+                        else if (status === 'CHANNEL_ERROR') setConnectionStatus(false, 'در حال اتصال مجدد…');
+                    });
+
+                state.subscription = channel;
+            }
+
+            /* --- handle create new --- */
+            async function handleCreateNew() {
+                let username = createUsername.value.trim().toLowerCase();
+                if (!username) {
+                    showToast(createMessage, 'لطفاً نام کاربری را وارد کنید.', 'error');
+                    return;
+                }
+                let gameId = createGameId.value.trim();
+                if (!gameId) {
+                    gameId = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+                        /[xy]/g, function(c) {
+                            var r = Math.random() * 16 | 0,
+                                v = c == 'x' ? r : (r & 0x3 | 0x8);
+                            return v.toString(16);
+                        });
+                    createGameId.value = gameId;
+                }
+                showToast(createMessage, 'در حال ساخت بازی…', '');
+                btnCreateNew.disabled = true;
+
+                try {
+                    const { data: existing } = await fetchGame(gameId);
+                    if (existing && existing.id) {
+                        showToast(createMessage, 'این بازی قبلاً وجود دارد. از برگهٔ پیوستن استفاده کنید.', 'error');
+                        btnCreateNew.disabled = false;
+                        return;
+                    }
+
+                    const result = await createGame(gameId, username);
+                    if (result.error) {
+                        showToast(createMessage, 'خطا در ساخت: ' + result.error.message, 'error');
+                        btnCreateNew.disabled = false;
+                        return;
+                    }
+
+                    storeLastUsed(gameId, username);
+
+                    const assignedPlayerId = 'player1';
+                    state.gameId = gameId;
+                    state.playerId = assignedPlayerId;
+                    state.playerName = username;
+                    state.game = result.data;
+                    state.guesses = [];
+
+                    setupSubscription(gameId);
+
+                    creationInfo.classList.remove('hidden');
+                    const qrUrl =
+                        `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(gameId)}`;
+                    qrImage.src = qrUrl;
+                    createdUuidDisplay.textContent = gameId;
+
+                    showScreen(screenLobby);
+                    updateLobbyUI();
+                    showToast(createMessage, '', '');
+                    btnCreateNew.disabled = false;
+                } catch (err) {
+                    showToast(createMessage, 'خطا: ' + (err.message || 'ناشناخته'), 'error');
+                    btnCreateNew.disabled = false;
+                }
+            }
+
+            /* --- handle join --- */
+            async function handleJoin() {
+                const username = joinUsername.value.trim().toLowerCase();
+                const gameId = joinGameId.value.trim();
+                if (!username || !gameId) {
+                    showToast(joinMessage, 'نام کاربری و شناسه بازی الزامی است.', 'error');
+                    return;
+                }
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+                if (!uuidRegex.test(gameId)) {
+                    showToast(joinMessage, 'فرمت UUID نامعتبر است.', 'error');
+                    return;
+                }
+
+                showToast(joinMessage, 'در حال پیوستن به بازی…', '');
+                btnJoin.disabled = true;
+
+                try {
+                    const joinResult = await joinGame(gameId, username);
+                    if (joinResult.error) {
+                        showToast(joinMessage, joinResult.error, 'error');
+                        btnJoin.disabled = false;
+                        return;
+                    }
+
+                    storeLastUsed(gameId, username);
+
+                    state.gameId = gameId;
+                    state.playerId = joinResult.playerId;
+                    state.playerName = username;
+                    state.game = joinResult.data;
+                    state.guesses = [];
+                    const { data: guesses } = await fetchGuesses(gameId);
+                    state.guesses = guesses || [];
+
+                    setupSubscription(gameId);
+
+                    if (state.game.status === 'playing' || state.game.status === 'finished') {
+                        showScreen(screenGame);
+                        updateGameUI();
+                    } else {
+                        showScreen(screenLobby);
+                        updateLobbyUI();
+                    }
+                    showToast(joinMessage, '', '');
+                    btnJoin.disabled = false;
+                } catch (err) {
+                    showToast(joinMessage, 'خطا: ' + (err.message || 'ناشناخته'), 'error');
+                    btnJoin.disabled = false;
+                }
+            }
+
+            /* --- letter box input handling (RTL-aware) --- */
+            function setupLetterBoxes(boxes, onComplete) {
+                boxes.forEach((box, index) => {
+                    box.addEventListener('input', function(e) {
+                        const val = this.value;
+                        const filtered = val.replace(/[^\u0600-\u06FF]/g, '');
+                        this.value = filtered.slice(0, 1);
+                        if (this.value.length === 1) {
+                            if (index < boxes.length - 1) {
+                                boxes[index + 1].focus();
+                            } else {
+                                if (onComplete) onComplete();
+                            }
+                        }
+                    });
+
+                    box.addEventListener('keydown', function(e) {
+                        if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                            boxes[index - 1].focus();
+                        }
+                        if (e.key === 'ArrowLeft' && index < boxes.length - 1) {
+                            boxes[index + 1].focus();
+                            e.preventDefault();
+                        }
+                        if (e.key === 'ArrowRight' && index > 0) {
+                            boxes[index - 1].focus();
+                            e.preventDefault();
+                        }
+                    });
+                });
+            }
+
+            // Only guess boxes need this
+            setupLetterBoxes(guessBoxes, function() {
+                if (!btnSubmitGuess.disabled) {
+                    btnSubmitGuess.click();
+                }
+            });
+
+            /* --- game: submit guess --- */
+            async function handleGuess() {
+                const word = getWordFromBoxes(guessBoxes);
+                if (!isValidPersianWord(word)) {
+                    showToast(gameGuessMessage, 'لطفاً سه حرف فارسی وارد کنید.', 'error');
+                    return;
+                }
+                if (!state.gameId || !state.playerId) {
+                    showToast(gameGuessMessage, 'در بازی نیستید.', 'error');
+                    return;
+                }
+                if (state.gameOver) {
+                    showToast(gameGuessMessage, 'بازی تمام شده است.', 'error');
+                    return;
+                }
+                if (state.game.status !== 'playing') {
+                    showToast(gameGuessMessage, 'بازی در جریان نیست.', 'error');
+                    return;
+                }
+                if (state.game.current_turn !== state.playerId) {
+                    showToast(gameGuessMessage, 'نوبت شما نیست!', 'error');
+                    return;
+                }
+
+                showToast(gameGuessMessage, 'در حال ثبت حدس…', '');
+                btnSubmitGuess.disabled = true;
+                guessBoxes.forEach(box => box.disabled = true);
+
+                try {
+                    const result = await submitGuess(state.gameId, state.playerId, word);
+                    if (result.error) {
+                        showToast(gameGuessMessage, 'خطا: ' + result.error.message, 'error');
+                        btnSubmitGuess.disabled = false;
+                        guessBoxes.forEach(box => box.disabled = false);
+                        return;
+                    }
+                    showToast(gameGuessMessage, '✅ حدس ثبت شد!', 'success');
+                    setTimeout(() => showToast(gameGuessMessage, '', ''), 3000);
+                    guessBoxes.forEach(box => box.value = '');
+                    btnSubmitGuess.disabled = false;
+                    guessBoxes.forEach(box => box.disabled = false);
+
+                    const { data: gData } = await fetchGame(state.gameId);
+                    if (gData) state.game = gData;
+                    const { data: guesses } = await fetchGuesses(state.gameId);
+                    if (guesses) state.guesses = guesses;
+                    updateGameUI();
+
+                    if (state.game.status === 'finished') {
+                        showToast(gameGuessMessage, '🏁 بازی تمام شد!', 'success');
+                    }
+                } catch (err) {
+                    showToast(gameGuessMessage, 'خطا: ' + (err.message || 'ناشناخته'), 'error');
+                    btnSubmitGuess.disabled = false;
+                    guessBoxes.forEach(box => box.disabled = false);
+                }
+            }
+
+            /* --- surrender / end game modal --- */
+            function showSurrenderModal() {
+                if (!state.game || state.game.status !== 'playing') return;
+                surrenderModal.classList.remove('hidden');
+            }
+
+            async function handleSurrenderAction(winner) {
+                surrenderModal.classList.add('hidden');
+                if (!state.gameId) return;
+                try {
+                    let updateData = {
+                        status: 'finished',
+                        current_turn: null,
+                        turn_started_at: null,
+                    };
+                    if (winner === 'draw') {
+                        updateData.winner = 'draw';
+                    } else {
+                        const players = ['player1', 'player2', 'player3'].filter(p => p !== state.playerId);
+                        updateData.winner = players[Math.floor(Math.random() * players.length)];
+                    }
+                    const { error } = await supabase
+                        .from('games')
+                        .update(updateData)
+                        .eq('id', state.gameId);
+                    if (error) {
+                        console.warn('Surrender update error:', error);
+                        showToast(gameGuessMessage, 'خطا در پایان بازی.', 'error');
+                    }
+                    const { data: gData } = await fetchGame(state.gameId);
+                    if (gData) state.game = gData;
+                    const { data: guesses } = await fetchGuesses(state.gameId);
+                    if (guesses) state.guesses = guesses;
+                    updateGameUI();
+                } catch (err) {
+                    console.warn(err);
+                }
+            }
+
+            /* --- reveal my word (no longer needed but we keep a placeholder) --- */
+            function handleRevealMyWord() {
+                showToast(revealMyWordToast, 'در این نسخه کلمه‌ای انتخاب نمی‌کنید.', 'error');
+                setTimeout(() => showToast(revealMyWordToast, '', ''), 3000);
+            }
+
+            /* --- copy UUID --- */
+            function copyUuid() {
+                const uuid = createdUuidDisplay.textContent;
+                if (!uuid) return;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(uuid).then(() => {
+                        const orig = copyUuidBtn.textContent;
+                        copyUuidBtn.textContent = '✅ کپی شد!';
+                        setTimeout(() => copyUuidBtn.textContent = orig, 2000);
+                    }).catch(() => fallbackCopy(uuid));
+                } else {
+                    fallbackCopy(uuid);
+                }
+            }
+
+            function fallbackCopy(text) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand('copy');
+                    const orig = copyUuidBtn.textContent;
+                    copyUuidBtn.textContent = '✅ کپی شد!';
+                    setTimeout(() => copyUuidBtn.textContent = orig, 2000);
+                } catch (e) { alert('کپی نشد. لطفاً شناسه را دستی کپی کنید.'); }
+                document.body.removeChild(ta);
+            }
+
+            /* --- tab switching --- */
+            function switchTab(tabId) {
+                tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+                document.querySelectorAll('.tab-content').forEach(el => {
+                    el.classList.toggle('active', el.id === tabId);
+                });
+            }
+
+            /* --- event listeners & init --- */
+            function setupEventListeners() {
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+                });
+
+                btnCreateNew.addEventListener('click', handleCreateNew);
+                copyUuidBtn.addEventListener('click', copyUuid);
+                btnJoin.addEventListener('click', handleJoin);
+
+                btnSubmitGuess.addEventListener('click', handleGuess);
+                btnSurrender.addEventListener('click', showSurrenderModal);
+                btnLeaveGame.addEventListener('click', () => {
+                    if (confirm('از بازی خارج می‌شوید؟ می‌توانید بعداً دوباره وارد شوید.')) {
+                        leaveGame();
+                    }
+                });
+                btnRevealMyWord.addEventListener('click', handleRevealMyWord);
+                btnPlayAgain.addEventListener('click', handlePlayAgain);
+
+                modalCancel.addEventListener('click', () => surrenderModal.classList.add('hidden'));
+                modalSurrender.addEventListener('click', () => handleSurrenderAction('surrender'));
+                modalDraw.addEventListener('click', () => handleSurrenderAction('draw'));
+                surrenderModal.addEventListener('click', (e) => {
+                    if (e.target === surrenderModal) surrenderModal.classList.add('hidden');
+                });
+
+                const enterGuard = (e, btn) => {
+                    if (e.key === 'Enter' && !btn.disabled) btn.click();
+                };
+                createUsername.addEventListener('keydown', (e) => enterGuard(e, btnCreateNew));
+                createGameId.addEventListener('keydown', (e) => enterGuard(e, btnCreateNew));
+                joinUsername.addEventListener('keydown', (e) => enterGuard(e, btnJoin));
+                joinGameId.addEventListener('keydown', (e) => enterGuard(e, btnJoin));
+
+                [createUsername, joinUsername].forEach(el => {
+                    el.addEventListener('input', () => {
+                        el.value = el.value.toLowerCase();
+                    });
+                });
+
+                createGameId.addEventListener('focus', () => {
+                    if (!createGameId.value.trim()) {
+                        const id = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+                            .replace(/[xy]/g, function(c) {
+                                var r = Math.random() * 16 | 0,
+                                    v = c == 'x' ? r : (r & 0x3 | 0x8);
+                                return v.toString(16);
+                            });
+                        createGameId.value = id;
+                    }
+                });
+
+                const last = loadLastUsed();
+                if (last.gameId) joinGameId.value = last.gameId;
+                if (last.username) joinUsername.value = last.username;
+            }
+
+            /* --- init --- */
+            async function init() {
+                setConnectionStatus(true, 'متصل');
+
+                const last = loadLastUsed();
+                if (last.gameId) joinGameId.value = last.gameId;
+                if (last.username) joinUsername.value = last.username;
+
+                showScreen(screenJoin);
+                switchTab('tabJoin');
+                setupEventListeners();
+
+                setTimeout(() => joinUsername.focus(), 200);
+            }
+
+            document.addEventListener('DOMContentLoaded', init);
+        })();
+    </script>
+
+</body>
+</html>
