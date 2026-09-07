@@ -1774,69 +1774,59 @@
                 }
             }
 
-            /* --- Play Again chain --- */
+            /* --- Play Again chain (fixed) --- */
             async function handlePlayAgain() {
                 if (!state.game || !state.playerId) return;
                 const oldGame = state.game;
 
-                // Check if this game already has a next_game_id
+                // If there's a next_game_id, join it
                 if (oldGame.next_game_id) {
-                    // Switch to the existing next game
+                    // Check if the next game still exists and is joinable
                     const { data: nextGame, error: fetchErr } = await fetchGame(oldGame.next_game_id);
                     if (fetchErr || !nextGame) {
-                        showToast(gameGuessMessage, 'بازی بعدی پیدا نشد، دوباره تلاش کنید.', 'error');
+                        showToast(gameGuessMessage, 'بازی بعدی پیدا نشد.', 'error');
                         return;
                     }
-                    // Determine playerId in the new game
-                    let playerId = null;
-                    if (nextGame.player1_id && nextGame.player1_id.toLowerCase() === state.playerName.toLowerCase()) {
-                        playerId = 'player1';
-                    } else if (nextGame.player2_id && nextGame.player2_id.toLowerCase() === state.playerName
-                        .toLowerCase()) {
-                        playerId = 'player2';
-                    } else if (nextGame.player3_id && nextGame.player3_id.toLowerCase() === state.playerName
-                        .toLowerCase()) {
-                        playerId = 'player3';
-                    } else {
-                        showToast(gameGuessMessage, 'شما در بازی بعدی نیستید.', 'error');
+                    // Join the game (this will assign playerId based on slot)
+                    const joinResult = await joinGame(oldGame.next_game_id, state.playerName);
+                    if (joinResult.error) {
+                        showToast(gameGuessMessage, joinResult.error, 'error');
                         return;
                     }
-                    // Switch to the next game
+                    // Redirect to the new game
                     state.gameId = oldGame.next_game_id;
-                    state.playerId = playerId;
-                    state.game = nextGame;
+                    state.playerId = joinResult.playerId;
+                    state.game = joinResult.data;
                     state.guesses = [];
                     state.gameOver = false;
                     setupSubscription(oldGame.next_game_id);
+                    // Make sure we go to lobby, not directly to game
                     showScreen(screenLobby);
                     updateLobbyUI();
+                    // Try to start if all joined
+                    await tryStartGame(oldGame.next_game_id);
                     return;
                 }
 
-                // No next game yet — create one
-                const p1Name = oldGame.player1_id;
-                const p2Name = oldGame.player2_id;
-                const p3Name = oldGame.player3_id;
-                if (!p1Name || !p2Name || !p3Name) {
-                    showToast(gameGuessMessage, 'همه بازیکنان برای بازی دوباره حضور ندارند.', 'error');
-                    return;
-                }
-
+                // No next game yet – create one with only the current player
                 const newGameId = crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
                     /[xy]/g, function(c) {
                         var r = Math.random() * 16 | 0,
                             v = c == 'x' ? r : (r & 0x3 | 0x8);
                         return v.toString(16);
                     });
+
                 try {
                     const secretWord = await fetchRandomSecretWord();
+                    // Create game with only the current player as player1
+                    // The other players will join via the next_game_id link
                     const { data: newGame, error } = await supabase
                         .from('games')
                         .insert([{
                             id: newGameId,
-                            player1_id: p1Name,
-                            player2_id: p2Name,
-                            player3_id: p3Name,
+                            player1_id: state.playerName,
+                            player2_id: null,
+                            player3_id: null,
                             secret_word: secretWord,
                             status: 'waiting',
                             current_turn: null,
@@ -1853,27 +1843,17 @@
                         .update({ next_game_id: newGameId })
                         .eq('id', oldGame.id);
 
-                    // Determine playerId in the new game
-                    let playerId = null;
-                    if (newGame.player1_id && newGame.player1_id.toLowerCase() === state.playerName.toLowerCase()) {
-                        playerId = 'player1';
-                    } else if (newGame.player2_id && newGame.player2_id.toLowerCase() === state.playerName
-                        .toLowerCase()) {
-                        playerId = 'player2';
-                    } else if (newGame.player3_id && newGame.player3_id.toLowerCase() === state.playerName
-                        .toLowerCase()) {
-                        playerId = 'player3';
-                    }
-
                     storeLastUsed(newGameId, state.playerName);
                     state.gameId = newGameId;
-                    state.playerId = playerId;
+                    state.playerId = 'player1'; // the creator is player1
                     state.game = newGame;
                     state.guesses = [];
                     state.gameOver = false;
                     setupSubscription(newGameId);
                     showScreen(screenLobby);
                     updateLobbyUI();
+                    // Try to start if all joined (shouldn't start yet, only player1 is present)
+                    await tryStartGame(newGameId);
                 } catch (err) {
                     console.warn('Play again error:', err);
                     showToast(gameGuessMessage, 'خطا در ساخت بازی جدید.', 'error');
