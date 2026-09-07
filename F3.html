@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>گارنت F3 — بازی ۳ نفره</title>
+    <title>گارنت F3 — ۳ نفره</title>
 
     <!-- Vazir Font -->
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet" />
@@ -806,7 +806,7 @@
                             <li>هر بازیکن در نوبت خود یک کلمهٔ ۳ حرفی <strong>حدس</strong> می‌زند.</li>
                             <li>عدد نشان می‌دهد <strong>چند حرف</strong> از کلمهٔ شما در کلمهٔ مخفی وجود دارد.</li>
                             <li>هر نوبت <strong>۴۲ ثانیه</strong> وقت دارید – در غیر این صورت نوبت به بعدی می‌رسد.</li>
-                            <li>ترتیب نوبت‌ها: ۱ → ۲ → ۳ → ۳ → ۲ → ۱ → ۱ → ۲ → ۳ → …</li>
+                            <li>ترتیب نوبت‌ها: ۱ → ۲ → ۳ → ۲ → ۱ → ۲ → ۳ → …</li>
                             <li>کسی که <strong>کلمهٔ دقیق</strong> را حدس بزند، برنده است!</li>
                         </ol>
                     </div>
@@ -847,40 +847,26 @@
                     <div style="background:#0f141e;padding:8px 16px;border-radius:10px;border:1px solid #2a3342;">
                         <div style="font-size:12px;color:#6a7a98;">بازیکن ۱</div>
                         <div id="lobbyP1Name" style="font-weight:600;">—</div>
-                        <div id="lobbyP1Ready" style="font-size:13px;color:#4a6a5a;">⏳ آماده نیست</div>
+                        <div id="lobbyP1Ready" style="font-size:13px;color:#4a6a5a;">⏳ حضور ندارد</div>
                     </div>
                     <div style="background:#0f141e;padding:8px 16px;border-radius:10px;border:1px solid #2a3342;">
                         <div style="font-size:12px;color:#6a7a98;">بازیکن ۲</div>
                         <div id="lobbyP2Name" style="font-weight:600;">—</div>
-                        <div id="lobbyP2Ready" style="font-size:13px;color:#4a6a5a;">⏳ آماده نیست</div>
+                        <div id="lobbyP2Ready" style="font-size:13px;color:#4a6a5a;">⏳ حضور ندارد</div>
                     </div>
                     <div style="background:#0f141e;padding:8px 16px;border-radius:10px;border:1px solid #2a3342;">
                         <div style="font-size:12px;color:#6a7a98;">بازیکن ۳</div>
                         <div id="lobbyP3Name" style="font-weight:600;">—</div>
-                        <div id="lobbyP3Ready" style="font-size:13px;color:#4a6a5a;">⏳ آماده نیست</div>
+                        <div id="lobbyP3Ready" style="font-size:13px;color:#4a6a5a;">⏳ حضور ندارد</div>
                     </div>
                 </div>
                 <div id="lobbyGameStatus" style="margin-top:10px;font-size:13px;color:#6a7a98;text-align:center;">
-                    منتظر پیوستن بازیکنان…
+                    در انتظار پیوستن ۳ بازیکن…
                 </div>
-            </div>
-
-            <div class="panel" style="margin-top:12px;">
-                <div class="panel-title">✏️ کلمهٔ مخفی شما</div>
-                <div class="letter-boxes" id="lobbyWordBoxes">
-                    <input type="text" maxlength="1" class="lobby-letter" data-index="0" />
-                    <input type="text" maxlength="1" class="lobby-letter" data-index="1" />
-                    <input type="text" maxlength="1" class="lobby-letter" data-index="2" />
-                </div>
-                <div style="margin-top:10px;">
-                    <button id="lobbySubmitWord" class="primary" style="width:100%;">ثبت کلمه</button>
-                </div>
-                <div id="lobbyWordStatus" style="font-size:13px;color:#6a7a98;margin-top:6px;">سه حرف فارسی وارد کنید.</div>
-                <div id="lobbyWordMessage" class="toast hidden" style="margin-top:8px;"></div>
             </div>
 
             <div style="margin-top:12px;text-align:center;font-size:14px;color:#5a6a88;" id="lobbyWaitingMsg">
-                در انتظار ثبت کلمهٔ همهٔ بازیکنان…
+                منتظر تکمیل بازیکنان…
             </div>
         </div>
 
@@ -966,6 +952,7 @@
             /* --- Constants --- */
             const TURN_DURATION = 42;
             const PLAYER_IDS = ['player1', 'player2', 'player3'];
+            // Fallback words if no guesses exist
             const FALLBACK_WORDS = ['اب', 'آب', 'اد', 'ار', 'از', 'اس', 'اش', 'اف', 'اق', 'ال', 'ام', 'ان', 'او', 'اه', 'ای',
                 'با', 'بد', 'بر', 'بز', 'بس', 'بش', 'بع', 'بل', 'بن', 'بو', 'بی', 'تا', 'ته', 'تو', 'تی', 'جا', 'جه', 'جو',
                 'چو', 'حا', 'حد', 'حر', 'حس', 'حق', 'حل', 'حم', 'حی', 'خا', 'خر', 'خط', 'خف', 'خل', 'خو', 'دا', 'در', 'دس',
@@ -1019,10 +1006,6 @@
             const lobbyP2Ready = $('lobbyP2Ready');
             const lobbyP3Ready = $('lobbyP3Ready');
             const lobbyGameStatus = $('lobbyGameStatus');
-            const lobbyWordBoxes = document.querySelectorAll('#lobbyWordBoxes input');
-            const lobbySubmitWord = $('lobbySubmitWord');
-            const lobbyWordStatus = $('lobbyWordStatus');
-            const lobbyWordMessage = $('lobbyWordMessage');
             const lobbyWaitingMsg = $('lobbyWaitingMsg');
 
             // Game
@@ -1061,7 +1044,6 @@
                 game: null,
                 guesses: [],
                 subscription: null,
-                myWordSet: false,
                 isMyTurn: false,
                 gameOver: false,
                 turnTimer: null,
@@ -1113,27 +1095,13 @@
                 return '—';
             }
 
-            function getPlayerWord(playerId) {
-                if (!state.game) return null;
-                if (playerId === 'player1') return state.game.player1_word;
-                if (playerId === 'player2') return state.game.player2_word;
-                if (playerId === 'player3') return state.game.player3_word;
-                return null;
-            }
-
             function getMyPlayerId() {
                 return state.playerId;
             }
 
             function getMyWord() {
-                if (!state.game || !state.playerId) return null;
-                return getPlayerWord(state.playerId);
-            }
-
-            function isPlayerReady(playerId) {
-                if (!state.game) return false;
-                const word = getPlayerWord(playerId);
-                return word && word.length === 3 && isValidPersianWord(word);
+                // No player words in this version; we only guess
+                return null;
             }
 
             function getPlayerIndex(playerId) {
@@ -1161,56 +1129,26 @@
                 return String(matches);
             }
 
-            /* --- get next turn in the mirror pattern --- */
-            function getNextTurn(currentTurn, direction, isRepeat) {
-                // direction: 1 = forward, -1 = backward
-                // isRepeat: whether this turn is a repeat at the boundary
-
-                // Player order: player1 (1), player2 (2), player3 (3)
-                const pIndex = getPlayerIndex(currentTurn);
-
-                if (isRepeat) {
-                    // After a repeat, move in the same direction
-                    const nextIndex = pIndex + direction;
-                    if (nextIndex < 0 || nextIndex >= PLAYER_IDS.length) {
-                        // Should not happen with correct logic
-                        return { turn: currentTurn, direction: direction, isRepeat: false };
-                    }
-                    return {
-                        turn: PLAYER_IDS[nextIndex],
-                        direction: direction,
-                        isRepeat: false
-                    };
-                } else {
-                    // Check if we're at a boundary
-                    if (pIndex === PLAYER_IDS.length - 1 && direction === 1) {
-                        // At player3 going forward → stay on player3, then reverse direction
-                        return {
-                            turn: PLAYER_IDS[pIndex],
-                            direction: -1,
-                            isRepeat: true
-                        };
-                    } else if (pIndex === 0 && direction === -1) {
-                        // At player1 going backward → stay on player1, then reverse direction
-                        return {
-                            turn: PLAYER_IDS[pIndex],
-                            direction: 1,
-                            isRepeat: true
-                        };
-                    } else {
-                        // Normal move
-                        const nextIndex = pIndex + direction;
-                        if (nextIndex < 0 || nextIndex >= PLAYER_IDS.length) {
-                            // Fallback: stay on same
-                            return { turn: currentTurn, direction: direction, isRepeat: false };
-                        }
-                        return {
-                            turn: PLAYER_IDS[nextIndex],
-                            direction: direction,
-                            isRepeat: false
-                        };
-                    }
+            /* --- get next turn in the ping‑pong pattern: 1,2,3,2,1,2,3,2,... --- */
+            function getNextTurn(currentTurn, direction) {
+                // direction: 1 = moving up (1->2->3), -1 = moving down (3->2->1)
+                const idx = getPlayerIndex(currentTurn);
+                let nextIdx = idx + direction;
+                let nextDirection = direction;
+                // Check boundaries
+                if (nextIdx < 0) {
+                    // Moving down from 1? Should not happen if direction is -1 at 1? Actually we'll bounce to 2.
+                    nextIdx = 1; // go to player2
+                    nextDirection = 1; // reverse direction
+                } else if (nextIdx >= PLAYER_IDS.length) {
+                    // Moving up from 3? Bounce to 2
+                    nextIdx = PLAYER_IDS.length - 2; // index of player2
+                    nextDirection = -1; // reverse direction
                 }
+                return {
+                    turn: PLAYER_IDS[nextIdx],
+                    direction: nextDirection
+                };
             }
 
             /* --- render guess history (three columns) --- */
@@ -1319,20 +1257,20 @@
                 updatePlayerStatuses();
             }
 
-            /* --- update player statuses (ready/not ready) --- */
+            /* --- update player statuses (joined/not joined) --- */
             function updatePlayerStatuses() {
                 if (!state.game) return;
                 const game = state.game;
                 const statusMap = {
-                    'player1': { el: document.getElementById('statusP1'), ready: isPlayerReady('player1') },
-                    'player2': { el: document.getElementById('statusP2'), ready: isPlayerReady('player2') },
-                    'player3': { el: document.getElementById('statusP3'), ready: isPlayerReady('player3') },
+                    'player1': { el: document.getElementById('statusP1'), joined: !!game.player1_id },
+                    'player2': { el: document.getElementById('statusP2'), joined: !!game.player2_id },
+                    'player3': { el: document.getElementById('statusP3'), joined: !!game.player3_id },
                 };
                 Object.keys(statusMap).forEach(key => {
                     const data = statusMap[key];
                     if (data.el) {
-                        data.el.textContent = data.ready ? '✅ آماده' : '⏳ آماده نیست';
-                        data.el.style.color = data.ready ? '#6abf8a' : '#6a7a98';
+                        data.el.textContent = data.joined ? '✅ حاضر' : '⏳ غایب';
+                        data.el.style.color = data.joined ? '#6abf8a' : '#6a7a98';
                     }
                 });
             }
@@ -1411,7 +1349,7 @@
                     'player3': document.getElementById('timerBarFillP3'),
                 };
 
-                // Reset all bars
+                // Reset all
                 PLAYER_IDS.forEach(pid => {
                     if (barFills[pid]) {
                         barFills[pid].style.width = '0%';
@@ -1430,7 +1368,6 @@
 
                     if (barFills[turn]) {
                         barFills[turn].style.width = pct + '%';
-                        // Color based on perspective
                         if (turn === state.playerId) {
                             barFills[turn].className = 'timer-bar-fill your-turn';
                         } else {
@@ -1447,7 +1384,6 @@
             function updateTimers() {
                 if (!state.game || state.game.status !== 'playing') {
                     clearTimer();
-                    // Reset all timer displays
                     PLAYER_IDS.forEach(pid => {
                         const text = document.getElementById('timerTextP' + (getPlayerIndex(pid) + 1));
                         const bar = document.getElementById('timerBarFillP' + (getPlayerIndex(pid) + 1));
@@ -1474,30 +1410,19 @@
                             let remaining = Math.max(0, TURN_DURATION - elapsed);
                             if (remaining <= TURN_DURATION + 60 && remaining >= -60) {
                                 updateTimerDisplay(remaining);
-                            } else {
-                                // Reset to idle
-                                PLAYER_IDS.forEach(pid => {
-                                    const text = document.getElementById('timerTextP' + (getPlayerIndex(pid) +
-                                    1));
-                                    const bar = document.getElementById('timerBarFillP' + (getPlayerIndex(pid) +
-                                    1));
-                                    if (text) { text.textContent = '⏱';
-                                        text.className = 'timer-text'; }
-                                    if (bar) { bar.style.width = '0%';
-                                        bar.className = 'timer-bar-fill finished'; }
-                                });
+                                return;
                             }
                         }
-                    } else {
-                        PLAYER_IDS.forEach(pid => {
-                            const text = document.getElementById('timerTextP' + (getPlayerIndex(pid) + 1));
-                            const bar = document.getElementById('timerBarFillP' + (getPlayerIndex(pid) + 1));
-                            if (text) { text.textContent = '⏱';
-                                text.className = 'timer-text'; }
-                            if (bar) { bar.style.width = '0%';
-                                bar.className = 'timer-bar-fill finished'; }
-                        });
                     }
+                    // Fallback: reset
+                    PLAYER_IDS.forEach(pid => {
+                        const text = document.getElementById('timerTextP' + (getPlayerIndex(pid) + 1));
+                        const bar = document.getElementById('timerBarFillP' + (getPlayerIndex(pid) + 1));
+                        if (text) { text.textContent = '⏱';
+                            text.className = 'timer-text'; }
+                        if (bar) { bar.style.width = '0%';
+                            bar.className = 'timer-bar-fill finished'; }
+                    });
                 }
             }
 
@@ -1506,17 +1431,12 @@
                 if (state.game.current_turn !== state.playerId) return;
                 try {
                     const game = state.game;
-                    const next = getNextTurn(
-                        game.current_turn,
-                        game.turn_direction || 1,
-                        game.turn_repeat || false
-                    );
+                    const next = getNextTurn(game.current_turn, game.turn_direction || 1);
                     const { error } = await supabase
                         .from('games')
                         .update({
                             current_turn: next.turn,
                             turn_direction: next.direction,
-                            turn_repeat: next.isRepeat,
                             turn_started_at: new Date().toISOString(),
                         })
                         .eq('id', state.gameId)
@@ -1586,18 +1506,13 @@
                     gameTurnHint.textContent = 'در انتظار شروع بازی…';
                 }
 
-                const myWord = getMyWord();
-                state.myWordSet = !!myWord && myWord.length === 3 && isValidPersianWord(myWord);
-
-                const canGuess = isPlaying && turn === state.playerId && !isFinished && state.myWordSet;
+                const canGuess = isPlaying && turn === state.playerId && !isFinished;
                 guessBoxes.forEach(box => box.disabled = !canGuess);
                 btnSubmitGuess.disabled = !canGuess;
 
                 if (isFinished) {
                     guessBoxes.forEach(box => box.placeholder = '—');
                 } else if (!isPlaying) {
-                    guessBoxes.forEach(box => box.placeholder = '?');
-                } else if (!state.myWordSet) {
                     guessBoxes.forEach(box => box.placeholder = '?');
                 } else if (turn !== state.playerId) {
                     guessBoxes.forEach(box => box.placeholder = '?');
@@ -1649,27 +1564,24 @@
                 lobbyGameId.textContent = game.id;
                 const status = game.status;
 
-                // Player names and ready status
+                // Player names
                 lobbyP1Name.textContent = game.player1_id || '—';
                 lobbyP2Name.textContent = game.player2_id || '—';
                 lobbyP3Name.textContent = game.player3_id || '—';
 
-                const p1Ready = isPlayerReady('player1');
-                const p2Ready = isPlayerReady('player2');
-                const p3Ready = isPlayerReady('player3');
+                const p1Joined = !!game.player1_id;
+                const p2Joined = !!game.player2_id;
+                const p3Joined = !!game.player3_id;
 
-                lobbyP1Ready.textContent = p1Ready ? '✅ آماده' : '⏳ آماده نیست';
-                lobbyP1Ready.style.color = p1Ready ? '#6abf8a' : '#6a7a98';
-                lobbyP2Ready.textContent = p2Ready ? '✅ آماده' : '⏳ آماده نیست';
-                lobbyP2Ready.style.color = p2Ready ? '#6abf8a' : '#6a7a98';
-                lobbyP3Ready.textContent = p3Ready ? '✅ آماده' : '⏳ آماده نیست';
-                lobbyP3Ready.style.color = p3Ready ? '#6abf8a' : '#6a7a98';
+                lobbyP1Ready.textContent = p1Joined ? '✅ حاضر' : '⏳ غایب';
+                lobbyP1Ready.style.color = p1Joined ? '#6abf8a' : '#6a7a98';
+                lobbyP2Ready.textContent = p2Joined ? '✅ حاضر' : '⏳ غایب';
+                lobbyP2Ready.style.color = p2Joined ? '#6abf8a' : '#6a7a98';
+                lobbyP3Ready.textContent = p3Joined ? '✅ حاضر' : '⏳ غایب';
+                lobbyP3Ready.style.color = p3Joined ? '#6abf8a' : '#6a7a98';
 
-                // Count players
-                const players = [game.player1_id, game.player2_id, game.player3_id].filter(p => p);
-                const allReady = p1Ready && p2Ready && p3Ready && players.length === 3;
+                const allJoined = p1Joined && p2Joined && p3Joined;
 
-                // Lobby status badge
                 if (status === 'playing' || status === 'finished') {
                     lobbyStatusBadge.textContent = status === 'playing' ? '▶️ در حال بازی' : '🏁 پایان';
                     lobbyStatusBadge.className = `status-badge ${status === 'playing' ? 'playing' : 'finished'}`;
@@ -1678,36 +1590,20 @@
                     lobbyStatusBadge.className = 'status-badge waiting';
                 }
 
-                // Game status message
                 if (status === 'playing' || status === 'finished') {
                     lobbyGameStatus.textContent = status === 'playing' ? 'بازی در جریان است…' : 'بازی تمام شد.';
-                } else if (allReady) {
-                    lobbyGameStatus.textContent = '✅ همه آماده‌اند! بازی شروع می‌شود…';
-                } else if (players.length < 3) {
-                    lobbyGameStatus.textContent = `⏳ منتظر پیوستن ${3 - players.length} بازیکن دیگر…`;
+                } else if (allJoined) {
+                    lobbyGameStatus.textContent = '✅ همه حاضرند! بازی شروع می‌شود…';
                 } else {
-                    const missing = !p1Ready ? 'بازیکن ۱' : !p2Ready ? 'بازیکن ۲' : !p3Ready ? 'بازیکن ۳' : '';
-                    lobbyGameStatus.textContent = `⏳ در انتظار ثبت کلمهٔ ${missing}…`;
+                    const missing = !p1Joined ? 'بازیکن ۱' : !p2Joined ? 'بازیکن ۲' : !p3Joined ? 'بازیکن ۳' : '';
+                    lobbyGameStatus.textContent = `⏳ در انتظار پیوستن ${missing}…`;
                 }
 
-                // Word status
-                const myWord = getMyWord();
-                const wordSet = myWord && myWord.length === 3 && isValidPersianWord(myWord);
-                lobbyWordStatus.textContent = wordSet ?
-                    `✅ کلمه ثبت شد (${'●'.repeat(3)})` :
-                    'سه حرف فارسی وارد کنید.';
-                lobbyWordStatus.style.color = wordSet ? '#6abf8a' : '#6a7a98';
-                lobbySubmitWord.textContent = wordSet ? 'تغییر کلمه' : 'ثبت کلمه';
-
-                lobbyWaitingMsg.textContent = allReady ? 'همه آماده‌اند!' : 'در انتظار همهٔ بازیکنان…';
+                lobbyWaitingMsg.textContent = allJoined ? 'همه حاضرند!' : 'در انتظار تکمیل بازیکنان…';
 
                 if (status === 'playing' || status === 'finished') {
                     showScreen(screenGame);
                     refreshGameData();
-                }
-
-                if (!wordSet && state.playerId) {
-                    setTimeout(() => lobbyWordBoxes[0].focus(), 100);
                 }
             }
 
@@ -1747,7 +1643,6 @@
             }
 
             async function fetchRandomSecretWord() {
-                // Try to get a random Persian word from the guesses table
                 try {
                     const { data, error } = await supabase
                         .from('guesses')
@@ -1763,7 +1658,6 @@
                         return words[randomIndex];
                     }
                 } catch (e) { console.warn('Error fetching secret word:', e); }
-                // Fallback
                 return FALLBACK_WORDS[Math.floor(Math.random() * FALLBACK_WORDS.length)];
             }
 
@@ -1776,16 +1670,12 @@
                         player1_id: playerName,
                         player2_id: null,
                         player3_id: null,
-                        player1_word: null,
-                        player2_word: null,
-                        player3_word: null,
                         secret_word: secretWord,
                         status: 'waiting',
                         current_turn: null,
                         winner: null,
                         turn_started_at: null,
                         turn_direction: 1,
-                        turn_repeat: false,
                     }])
                     .select()
                     .single();
@@ -1830,18 +1720,6 @@
                 return { data: updated, playerId: slot };
             }
 
-            async function setWord(gameId, playerId, word) {
-                const field = playerId + '_word';
-                const { data, error } = await supabase
-                    .from('games')
-                    .update({ [field]: word })
-                    .eq('id', gameId)
-                    .select()
-                    .single();
-                if (error) return { error };
-                return { data };
-            }
-
             async function submitGuess(gameId, playerId, guessWord) {
                 const { data: game, error: fetchErr } = await fetchGame(gameId);
                 if (fetchErr || !game) return { error: 'بازی یافت نشد.' };
@@ -1874,25 +1752,20 @@
                         turn_started_at: null,
                     };
                 } else {
-                    const next = getNextTurn(
-                        game.current_turn,
-                        game.turn_direction || 1,
-                        game.turn_repeat || false
-                    );
+                    const next = getNextTurn(game.current_turn, game.turn_direction || 1);
                     updateData = {
                         current_turn: next.turn,
                         turn_direction: next.direction,
-                        turn_repeat: next.isRepeat,
                         turn_started_at: new Date().toISOString(),
                     };
                 }
                 if (game.status === 'waiting' || game.status === 'ready') {
+                    // This should not happen because game auto-starts when all joined
                     updateData.status = 'playing';
-                    // Set initial turn
-                    const initialTurn = getNextTurn('player1', 1, false);
-                    updateData.current_turn = initialTurn.turn;
-                    updateData.turn_direction = initialTurn.direction;
-                    updateData.turn_repeat = initialTurn.isRepeat;
+                    // Set initial turn to player1 with direction 1
+                    const initial = getNextTurn('player1', 1);
+                    updateData.current_turn = initial.turn;
+                    updateData.turn_direction = initial.direction;
                     updateData.turn_started_at = new Date().toISOString();
                 }
 
@@ -1912,27 +1785,18 @@
 
                 const players = [game.player1_id, game.player2_id, game.player3_id].filter(p => p);
                 if (players.length === 3) {
-                    const ready = players.every(p => {
-                        const pid = game.player1_id === p ? 'player1' :
-                            game.player2_id === p ? 'player2' : 'player3';
-                        const word = pid === 'player1' ? game.player1_word :
-                            pid === 'player2' ? game.player2_word : game.player3_word;
-                        return word && word.length === 3 && isValidPersianWord(word);
-                    });
-                    if (ready) {
-                        const initialTurn = getNextTurn('player1', 1, false);
-                        await supabase
-                            .from('games')
-                            .update({
-                                status: 'playing',
-                                current_turn: initialTurn.turn,
-                                turn_direction: initialTurn.direction,
-                                turn_repeat: initialTurn.isRepeat,
-                                turn_started_at: new Date().toISOString(),
-                            })
-                            .eq('id', gameId)
-                            .eq('status', 'waiting');
-                    }
+                    // All players joined, start game immediately
+                    const initialTurn = getNextTurn('player1', 1);
+                    await supabase
+                        .from('games')
+                        .update({
+                            status: 'playing',
+                            current_turn: initialTurn.turn,
+                            turn_direction: initialTurn.direction,
+                            turn_started_at: new Date().toISOString(),
+                        })
+                        .eq('id', gameId)
+                        .eq('status', 'waiting');
                 }
             }
 
@@ -1961,7 +1825,6 @@
                 state.playerName = null;
                 state.game = null;
                 state.guesses = [];
-                state.myWordSet = false;
                 state.isMyTurn = false;
                 state.gameOver = false;
 
@@ -1969,7 +1832,6 @@
                 creationInfo.classList.add('hidden');
                 showToast(createMessage, '', '');
                 showToast(joinMessage, '', '');
-                showToast(lobbyWordMessage, '', '');
                 showToast(gameGuessMessage, '', '');
                 showToast(revealMyWordToast, '', '');
                 const last = loadLastUsed();
@@ -2076,7 +1938,6 @@
                     state.playerName = username;
                     state.game = result.data;
                     state.guesses = [];
-                    state.myWordSet = false;
 
                     setupSubscription(gameId);
 
@@ -2180,59 +2041,12 @@
                 });
             }
 
-            setupLetterBoxes(lobbyWordBoxes, function() {
-                if (!lobbySubmitWord.disabled) {
-                    lobbySubmitWord.focus();
-                }
-            });
-
+            // Only guess boxes need this
             setupLetterBoxes(guessBoxes, function() {
                 if (!btnSubmitGuess.disabled) {
                     btnSubmitGuess.click();
                 }
             });
-
-            /* --- lobby: set word --- */
-            async function handleSetWord() {
-                const word = getWordFromBoxes(lobbyWordBoxes);
-                if (!isValidPersianWord(word)) {
-                    showToast(lobbyWordMessage, 'لطفاً سه حرف فارسی وارد کنید.', 'error');
-                    return;
-                }
-                if (!state.gameId || !state.playerId) {
-                    showToast(lobbyWordMessage, 'در بازی نیستید.', 'error');
-                    return;
-                }
-
-                showToast(lobbyWordMessage, 'در حال ثبت کلمه…', '');
-                lobbySubmitWord.disabled = true;
-
-                try {
-                    const result = await setWord(state.gameId, state.playerId, word);
-                    if (result.error) {
-                        showToast(lobbyWordMessage, 'خطا: ' + result.error.message, 'error');
-                        lobbySubmitWord.disabled = false;
-                        return;
-                    }
-                    state.game = result.data;
-                    state.myWordSet = true;
-                    showToast(lobbyWordMessage, '✅ کلمه ثبت شد!', 'success');
-                    setTimeout(() => showToast(lobbyWordMessage, '', ''), 3000);
-                    lobbySubmitWord.disabled = false;
-                    lobbyWordBoxes.forEach(box => box.value = '');
-                    updateLobbyUI();
-
-                    await tryStartGame(state.gameId);
-
-                    if (state.game.status === 'playing' || state.game.status === 'finished') {
-                        showScreen(screenGame);
-                        await refreshGameData();
-                    }
-                } catch (err) {
-                    showToast(lobbyWordMessage, 'خطا: ' + (err.message || 'ناشناخته'), 'error');
-                    lobbySubmitWord.disabled = false;
-                }
-            }
 
             /* --- game: submit guess --- */
             async function handleGuess() {
@@ -2310,8 +2124,7 @@
                     if (winner === 'draw') {
                         updateData.winner = 'draw';
                     } else {
-                        updateData.winner = state.playerId === 'player1' ? 'player2' : 'player1';
-                        // For surrender, just give win to someone else (not this player)
+                        // Give win to one of the other players
                         const players = ['player1', 'player2', 'player3'].filter(p => p !== state.playerId);
                         updateData.winner = players[Math.floor(Math.random() * players.length)];
                     }
@@ -2352,7 +2165,6 @@
                         return v.toString(16);
                     });
                 try {
-                    // Fetch new secret word
                     const secretWord = await fetchRandomSecretWord();
                     const { data: newGame, error } = await supabase
                         .from('games')
@@ -2361,16 +2173,12 @@
                             player1_id: p1Name,
                             player2_id: p2Name,
                             player3_id: p3Name,
-                            player1_word: null,
-                            player2_word: null,
-                            player3_word: null,
                             secret_word: secretWord,
                             status: 'waiting',
                             current_turn: null,
                             winner: null,
                             turn_started_at: null,
                             turn_direction: 1,
-                            turn_repeat: false,
                         }])
                         .select()
                         .single();
@@ -2379,7 +2187,6 @@
                     state.gameId = newGameId;
                     state.game = newGame;
                     state.guesses = [];
-                    state.myWordSet = false;
                     state.gameOver = false;
                     setupSubscription(newGameId);
                     showScreen(screenLobby);
@@ -2390,16 +2197,10 @@
                 }
             }
 
-            /* --- reveal my word --- */
+            /* --- reveal my word (no longer needed but we keep a placeholder) --- */
             function handleRevealMyWord() {
-                const myWord = getMyWord();
-                if (myWord && myWord.length === 3 && isValidPersianWord(myWord)) {
-                    showToast(revealMyWordToast, `کلمهٔ مخفی شما: ${myWord}`, 'success');
-                    setTimeout(() => showToast(revealMyWordToast, '', ''), 3000);
-                } else {
-                    showToast(revealMyWordToast, 'هنوز کلمه‌ای ثبت نکرده‌اید.', 'error');
-                    setTimeout(() => showToast(revealMyWordToast, '', ''), 3000);
-                }
+                showToast(revealMyWordToast, 'در این نسخه کلمه‌ای انتخاب نمی‌کنید.', 'error');
+                setTimeout(() => showToast(revealMyWordToast, '', ''), 3000);
             }
 
             /* --- copy UUID --- */
@@ -2450,8 +2251,6 @@
                 btnCreateNew.addEventListener('click', handleCreateNew);
                 copyUuidBtn.addEventListener('click', copyUuid);
                 btnJoin.addEventListener('click', handleJoin);
-
-                lobbySubmitWord.addEventListener('click', handleSetWord);
 
                 btnSubmitGuess.addEventListener('click', handleGuess);
                 btnSurrender.addEventListener('click', showSurrenderModal);
@@ -2513,7 +2312,6 @@
                 switchTab('tabJoin');
                 setupEventListeners();
 
-                // Focus on join username field
                 setTimeout(() => joinUsername.focus(), 200);
             }
 
